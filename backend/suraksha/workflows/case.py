@@ -96,16 +96,20 @@ class CaseWorkflow(StepRunner):
         self.st.entitlements, self.st.rule_results = ents, results
 
         # Eligibility gate only for unsure results: weak evidence or a verifier concern.
-        flagged = {f.target.removeprefix("entitlement:") for f in verdict.findings
+        flagged = {f.target.removeprefix("entitlement:"): f.reason for f in verdict.findings
                    if f.severity is not Severity.INFO}  # fmt: skip
-        self.st.needs_review = [
-            e.entitlement_id
-            for e in ents
-            if e.strength is Strength.POSSIBLE or e.entitlement_id in flagged
-        ]
-        if self.st.needs_review:
+        unsure = [e for e in ents if e.strength is Strength.POSSIBLE or e.entitlement_id in flagged]
+        self.st.needs_review = [e.entitlement_id for e in unsure]
+        if unsure:
             await self._stage("awaiting_eligibility_review")
+            notes = [f"{e.scheme_id.value} ({e.strength.value}"
+                     + (f", {flagged[e.entitlement_id]})" if e.entitlement_id in flagged else ")")
+                     for e in unsure]  # fmt: skip
+            await self.human_task("eligibility_review",
+                                  "Check before telling the family: " + "; ".join(notes),
+                                  assignee="reviewer", wait=False)  # fmt: skip
             await workflow.wait_condition(lambda: self.reviewed is not None)
+            self.open_task = None
             rejected = set(self.st.needs_review) - set(self.reviewed)
             keep = [i for i, e in enumerate(ents) if e.entitlement_id not in rejected]
             ents, results = [ents[i] for i in keep], [results[i] for i in keep]

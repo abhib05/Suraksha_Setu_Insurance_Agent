@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     vault_key: str = ""
     docstore_dir: Path = REPO_ROOT / "data" / "documents"
     portal_base_url: str = "http://localhost:8100"
-    agents: Literal["live", "stub"] = "live"  # stub: fixture-driven agents for demos and tests
+    # stub: fixture-driven agents; demo: fixtures but real filing with the mock portal
+    agents: Literal["live", "demo", "stub"] = "live"
 
     models_file: Path = REPO_ROOT / "models.yaml"
 

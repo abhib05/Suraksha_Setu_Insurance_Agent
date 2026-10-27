@@ -24,7 +24,8 @@ with workflow.unsafe.imports_passed_through():
         Severity,
         VerifierVerdict,
     )
-    from suraksha.workflows.base import StepRunner
+    from suraksha.services.submission.portal import REJECTED
+    from suraksha.workflows.base import FinalError, StepRunner
 
 
 class ClaimInput(BaseModel):
@@ -183,12 +184,21 @@ class ClaimWorkflow(StepRunner):
             self.decision = None
             await self._stage("awaiting_approval")
             await workflow.wait_condition(lambda: self.decision is not None)
-            if self.decision.decision is Decision.APPROVE:
-                break
-            comment = self.decision.comment
+            if self.decision.decision is not Decision.APPROVE:
+                comment = self.decision.comment
+                continue
 
-        # 4. Submit (idempotent per claim + version) and follow up until paid.
-        receipt = await self.step(CaseActivities.submit_packet, self.case_id, packet)
+            # 4. Submit (idempotent per claim + version). A rejection by the claim desk is
+            # final for this version: a reviewer looks at it, then the packet is rebuilt.
+            receipt = await self.step(CaseActivities.submit_packet, self.case_id, packet,
+                                      final_error=REJECTED)  # fmt: skip
+            if not isinstance(receipt, FinalError):
+                break
+            await self.human_task("portal_rejected", f"v{packet.version}: {receipt.message}",
+                                  assignee="reviewer")  # fmt: skip
+            comment = f"claim desk rejected v{packet.version}: {receipt.message}"
+
+        # 5. Follow up until paid.
         self.st.claim_number = receipt.claim_number
         await self._stage("submitted")
         while True:
@@ -201,11 +211,12 @@ class ClaimWorkflow(StepRunner):
                 await self._stage(portal.status)
             await workflow.sleep(timedelta(seconds=inp.status_poll_seconds))
 
-        # 5. A human confirms the money reached the nominee; a shortfall opens an appeal.
+        # 6. A human confirms the money reached the nominee; a shortfall opens an appeal.
         await self._stage("awaiting_payout_confirmation")
         await workflow.wait_condition(lambda: self.payout_received is not None)
         expected = ent.expected_payout_inr or 0
         if self.payout_received < expected:
+            await self._stage("appeal_open")
             await self.human_task(
                 "appeal",
                 f"Paid Rs {self.payout_received:,} of Rs {expected:,}; start appeal.",

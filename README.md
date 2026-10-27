@@ -38,9 +38,30 @@ approval of that exact packet version** (returned → rebuild) → submit → po
 a human confirms the payout (shortfall → appeal task).
 
 Every step retries 3 times with backoff; then it becomes a reviewer task and resumes when
-the task is resolved. Agents are stubs (`agents/stubs.py`) until M3–M5. Human decisions
+the task is resolved. `AGENTS=stub` runs fixture agents (`agents/stubs.py`) for tests. Human decisions
 come in through the API (`/cases/{id}/workflow/...`, `/claims/{id}/approve|return|...`,
 `/tasks/{id}/resolve`), which records each one in `approval` and the audit log.
+
+## Review console and filing (M6)
+
+- **Review queue** (console `/review`): every claim with its stage, packet version, verifier
+  result and claim number, the ones waiting on a reviewer first, plus open reviewer tasks
+  (verifier blocks, claim-desk rejections, failed steps, weak evidence to check, document
+  checks, appeals, family call-backs). Each task is resolved with a note that goes to the
+  audit log. Weak-evidence covers get a checkbox card: unticked covers are dropped before the
+  family is told anything.
+- **Packet review** (`/review/{claim}`): the printable packet beside the coordinator's
+  summary and the verifier findings; approve or return **that exact version** (returning
+  needs a comment and rebuilds the packet), then confirm the amount paid (less than expected
+  opens an appeal). Earlier versions and every decision stay visible.
+- **Submission** (`services/submission/portal.py`): the only code that sends a claim out.
+  Names are revealed from the vault at that boundary (audited); the idempotency key is
+  `<claim>:v<version>`, so a retry never files twice. A claim-desk rejection is final for that
+  version: it becomes a reviewer task, then the packet is rebuilt with the reason.
+- The mock portal checks each filing (every field filled, documents attached) and keeps its
+  state in `data/mock_portal.json`, so restarts don't lose claims.
+- `AGENTS=demo uv run poe dev` runs case A's fixtures with no model but real filing, which is
+  the quickest way to click through the console.
 
 ## Discovery, filing, verifier and coordinator (M5)
 

@@ -390,6 +390,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/review/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Claims */
+        get: operations["list_claims_review_claims_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review/claims/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Claim Detail */
+        get: operations["claim_detail_review_claims__claim_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -512,6 +546,60 @@ export interface components {
             /** Entitlement Ids */
             entitlement_ids: string[];
         };
+        /** ClaimDetail */
+        ClaimDetail: {
+            /** Claim Id */
+            claim_id: string;
+            /** Case Id */
+            case_id: string;
+            /** Scheme Id */
+            scheme_id: string;
+            /** Status */
+            status: string;
+            /** Claim Number */
+            claim_number: string | null;
+            /** Packet Version */
+            packet_version: number | null;
+            verdict: components["schemas"]["VerdictCounts"] | null;
+            /** Open Tasks */
+            open_tasks: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Expected Payout Inr */
+            expected_payout_inr: number | null;
+            /** Versions */
+            versions: components["schemas"]["PacketVersion"][];
+            /** Decisions */
+            decisions: components["schemas"]["Decision"][];
+            /** Tasks */
+            tasks: components["schemas"]["TaskOut"][];
+        };
+        /** ClaimRow */
+        ClaimRow: {
+            /** Claim Id */
+            claim_id: string;
+            /** Case Id */
+            case_id: string;
+            /** Scheme Id */
+            scheme_id: string;
+            /** Status */
+            status: string;
+            /** Claim Number */
+            claim_number: string | null;
+            /** Packet Version */
+            packet_version: number | null;
+            verdict: components["schemas"]["VerdictCounts"] | null;
+            /** Open Tasks */
+            open_tasks: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** ConsentIn */
         ConsentIn: {
             /** Given By Name */
@@ -547,6 +635,24 @@ export interface components {
          * @enum {string}
          */
         ConsentPurpose: "prepare_claims" | "share_with_partner";
+        /** Decision */
+        Decision: {
+            /** Gate */
+            gate: string;
+            /** Approver */
+            approver: string;
+            /** Decision */
+            decision: string;
+            /** Packet Version */
+            packet_version: number | null;
+            /** Comment */
+            comment: string | null;
+            /**
+             * Decided At
+             * Format: date-time
+             */
+            decided_at: string;
+        };
         /** DecisionIn */
         DecisionIn: {
             /** Approver */
@@ -621,6 +727,17 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** PacketVersion */
+        PacketVersion: {
+            /** Version */
+            version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            verdict: components["schemas"]["VerdictCounts"] | null;
+        };
         /** PayoutIn */
         PayoutIn: {
             /** Approver */
@@ -682,6 +799,15 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VerdictCounts */
+        VerdictCounts: {
+            /** Passed */
+            passed: boolean;
+            /** Blockers */
+            blockers: number;
+            /** Warnings */
+            warnings: number;
         };
     };
     responses: never;
@@ -1521,6 +1647,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_claims_review_claims_get: {
+        parameters: {
+            query?: {
+                case_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    claim_detail_review_claims__claim_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimDetail"];
                 };
             };
             /** @description Validation Error */

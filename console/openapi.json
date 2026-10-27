@@ -1231,6 +1231,101 @@
         }
       }
     },
+    "/review/claims": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "List Claims",
+        "operationId": "list_claims_review_claims_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClaimRow"
+                  },
+                  "title": "Response List Claims Review Claims Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/claims/{claim_id}": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Claim Detail",
+        "operationId": "claim_detail_review_claims__claim_id__get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -1541,6 +1636,190 @@
         ],
         "title": "ChooseIn"
       },
+      "ClaimDetail": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "scheme_id": {
+            "type": "string",
+            "title": "Scheme Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "claim_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Number"
+          },
+          "packet_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packet Version"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerdictCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "open_tasks": {
+            "type": "integer",
+            "title": "Open Tasks"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "expected_payout_inr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Payout Inr"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/PacketVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/Decision"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOut"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "case_id",
+          "scheme_id",
+          "status",
+          "claim_number",
+          "packet_version",
+          "verdict",
+          "open_tasks",
+          "updated_at",
+          "expected_payout_inr",
+          "versions",
+          "decisions",
+          "tasks"
+        ],
+        "title": "ClaimDetail"
+      },
+      "ClaimRow": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "scheme_id": {
+            "type": "string",
+            "title": "Scheme Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "claim_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Number"
+          },
+          "packet_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packet Version"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerdictCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "open_tasks": {
+            "type": "integer",
+            "title": "Open Tasks"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "case_id",
+          "scheme_id",
+          "status",
+          "claim_number",
+          "packet_version",
+          "verdict",
+          "open_tasks",
+          "updated_at"
+        ],
+        "title": "ClaimRow"
+      },
       "ConsentIn": {
         "properties": {
           "given_by_name": {
@@ -1609,6 +1888,59 @@
           "share_with_partner"
         ],
         "title": "ConsentPurpose"
+      },
+      "Decision": {
+        "properties": {
+          "gate": {
+            "type": "string",
+            "title": "Gate"
+          },
+          "approver": {
+            "type": "string",
+            "title": "Approver"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "packet_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packet Version"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Decided At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gate",
+          "approver",
+          "decision",
+          "packet_version",
+          "comment",
+          "decided_at"
+        ],
+        "title": "Decision"
       },
       "DecisionIn": {
         "properties": {
@@ -1816,6 +2148,36 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "PacketVersion": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerdictCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "created_at",
+          "verdict"
+        ],
+        "title": "PacketVersion"
+      },
       "PayoutIn": {
         "properties": {
           "approver": {
@@ -1971,6 +2333,29 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerdictCounts": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "blockers": {
+            "type": "integer",
+            "title": "Blockers"
+          },
+          "warnings": {
+            "type": "integer",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passed",
+          "blockers",
+          "warnings"
+        ],
+        "title": "VerdictCounts"
       }
     }
   }

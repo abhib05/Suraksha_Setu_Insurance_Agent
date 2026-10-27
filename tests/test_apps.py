@@ -8,9 +8,12 @@ def test_api_health():
     assert TestClient(api_app).get("/health").json()["status"] == "ok"
 
 
-def test_mock_portal_is_idempotent_and_advances_status():
+def test_mock_portal_is_idempotent_and_advances_status(tmp_path, monkeypatch):
+    monkeypatch.setenv("MOCK_PORTAL_STATE", str(tmp_path / "portal.json"))
     client = TestClient(portal_app)
-    body = {"idempotency_key": "cl-test:v1", "scheme_id": "pmjjby", "packet": {}}
+    body = {"idempotency_key": "cl-test:v1", "scheme_id": "pmjjby", "claim_ref": "cl-test",
+            "forms": [{"template_id": "f", "fields": [{"name": "a", "value": "1"}]}],
+            "attachments": [{"doc_id": "d1", "label": "Death certificate", "order": 1}]}
     first = client.post("/claims", json=body).json()
     again = client.post("/claims", json=body).json()
     assert first == again

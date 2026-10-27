@@ -205,6 +205,25 @@ async def test_verifier_failure_creates_reviewer_task_then_rebuilds(env):
         assert st["packet_version"] == 2 and st["verdict"]["passed"]
 
 
+async def test_portal_rejection_goes_to_reviewer_then_rebuilds(env):
+    async with Harness(env, Scenario(portal_rejects_versions={1})) as h:
+        claims = await h.to_claims()
+        cid = next(iter(claims.values()))
+        claim = h.claim(cid)
+        await h.until(claim, stage("awaiting_approval"))
+        await claim.signal(ClaimWorkflow.approve_packet, h.approval(cid, 1))
+        st = await h.until(claim, lambda s: s["open_task"] is not None)
+        task = h.store.tasks[st["open_task"]]
+        assert task["kind"] == "portal_rejected" and "stamp missing" in task["detail"]
+        assert "claim.rejected" in h.store.actions(h.case_id)
+        await claim.signal("resolve_task", st["open_task"])
+        st = await h.until(claim, lambda s: s["stage"] == "awaiting_approval"
+                           and s["packet_version"] == 2)  # fmt: skip
+        assert "claim desk rejected v1" in st["packet"]["cover_letter"]
+        await h.approve_and_pay(cid, version=2)
+        assert (await claim.result()).status == "closed_paid"
+
+
 async def test_flaky_step_retries_then_becomes_human_task(env):
     # interview fails 2x (retried away), discover fails 3x (exhausts retries -> task).
     async with Harness(env, Scenario(flaky={"interview": 2, "discover": 3})) as h:
@@ -220,8 +239,11 @@ async def test_flaky_step_retries_then_becomes_human_task(env):
 async def test_weak_evidence_goes_through_eligibility_review(env):
     async with Harness(env, Scenario(weak_evidence={SchemeId.RUPAY})) as h:
         await h.case.signal(CaseWorkflow.consent_given)
-        st = await h.until(h.case, stage("awaiting_eligibility_review"))
+        st = await h.until(h.case, lambda s: s["stage"] == "awaiting_eligibility_review"
+                           and s["open_task"])  # fmt: skip
         assert len(st["needs_review"]) == 1
+        task = h.store.tasks[st["open_task"]]
+        assert task["kind"] == "eligibility_review" and "rupay (possible" in task["detail"]
         await h.case.signal(CaseWorkflow.eligibility_reviewed, [])  # reviewer rejects it
         st = await h.until(h.case, stage("awaiting_choice"))
         assert {e["scheme_id"] for e in st["entitlements"]} == {"pmjjby", "pmsby"}

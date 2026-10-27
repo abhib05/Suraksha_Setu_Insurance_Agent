@@ -135,6 +135,10 @@ async def eligibility_review(case_id: str, body: EligibilityReviewIn, session: D
         case_id=case_id, gate=Gate.ELIGIBILITY_REVIEW, approver=body.approver,
         decision=Decision.APPROVE, comment=body.comment, decided_at=datetime.now(UTC),
     ), detail={"approved": body.approved_entitlement_ids})  # fmt: skip
+    for task in session.scalars(select(m.Task).where(
+        m.Task.case_id == case_id, m.Task.kind == "eligibility_review", m.Task.status == "open"
+    )):  # fmt: skip
+        task.status = "done"
     await (
         (await temporal())
         .get_workflow_handle(case_wf_id(case_id))

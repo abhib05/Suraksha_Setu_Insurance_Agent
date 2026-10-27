@@ -36,6 +36,7 @@ from suraksha.contracts.submission import Channel
 from suraksha.services import rules
 from suraksha.services.registry import expected_payout, required_documents
 from suraksha.services.rules.facts import rule_facts
+from suraksha.services.submission.portal import SubmissionRejected
 
 CASES_DIR = REPO_ROOT / "evals" / "cases"
 
@@ -63,6 +64,7 @@ class Scenario:
     # activity name -> how many times it fails before succeeding
     flaky: dict[str, int] = field(default_factory=dict)
     portal_statuses: list[str] = field(default_factory=lambda: ["submitted", "under_review"])
+    portal_rejects_versions: set[int] = field(default_factory=set)
     paid_amount: dict[SchemeId, int] = field(default_factory=dict)  # default: full payout
 
 
@@ -195,9 +197,11 @@ class StubAgents:
     ) -> NextAction:
         return coordinator.next_action(packet, verdict, rule_result, use_model=self.use_model)
 
-    # submission service (real adapter in M6)
+    # submission service (LiveAgents uses the portal adapter)
     def submit(self, packet: ClaimPacket) -> SubmissionReceipt:
         self._maybe_fail("submit")
+        if packet.version in self.s.portal_rejects_versions:
+            raise SubmissionRejected(f"portal rejected {packet.idempotency_key}: stamp missing")
         n = int(hashlib.sha256(packet.idempotency_key.encode()).hexdigest(), 16) % 100_000
         return SubmissionReceipt(
             claim_id=packet.claim_id,

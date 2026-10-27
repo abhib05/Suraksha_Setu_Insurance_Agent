@@ -3,6 +3,7 @@ an audit event. Workflows never touch agents, the database or the network direct
 
 from pydantic import BaseModel
 from temporalio import activity
+from temporalio.exceptions import ApplicationError
 
 from suraksha.activities.store import Store
 from suraksha.agents.stubs import StubAgents
@@ -18,6 +19,7 @@ from suraksha.contracts import (
     SubmissionReceipt,
     VerifierVerdict,
 )
+from suraksha.services.submission.portal import REJECTED, SubmissionRejected
 
 
 class PortalStatus(BaseModel):
@@ -156,7 +158,12 @@ class CaseActivities:
 
     @activity.defn
     def submit_packet(self, case_id: str, packet: ClaimPacket) -> SubmissionReceipt:
-        receipt = self.agents.submit(packet)
+        try:
+            receipt = self.agents.submit(packet)
+        except SubmissionRejected as e:
+            self.store.record(case_id, "service:submission", "claim.rejected", input=packet,
+                              detail={"claim_id": packet.claim_id, "reason": str(e)})  # fmt: skip
+            raise ApplicationError(str(e), type=REJECTED, non_retryable=True) from e
         self.store.record(case_id, "service:submission", "claim.submitted", input=packet,
                           output=receipt, detail={"claim_id": packet.claim_id,
                           "claim_number": receipt.claim_number,

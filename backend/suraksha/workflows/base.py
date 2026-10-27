@@ -1,12 +1,13 @@
 """Shared workflow plumbing: every step retries with backoff, and after 3 failures the case
 gets a human task instead of failing; the step runs again once the task is resolved."""
 
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
 from temporalio import workflow
 from temporalio.common import RetryPolicy
-from temporalio.exceptions import ActivityError
+from temporalio.exceptions import ActivityError, ApplicationError
 
 with workflow.unsafe.imports_passed_through():
     from suraksha.activities.case import CaseActivities
@@ -18,6 +19,14 @@ RETRY = RetryPolicy(
     maximum_attempts=3,
 )
 STEP_TIMEOUT = timedelta(seconds=60)
+
+
+@dataclass
+class FinalError:
+    """A step failed in a way retrying cannot fix (e.g. the claim desk rejected the filing);
+    the workflow decides what happens next instead of opening a step_failed task."""
+
+    message: str
 
 
 class StepRunner:
@@ -32,17 +41,19 @@ class StepRunner:
     def resolve_task(self, task_id: str) -> None:
         self.resolved_tasks.add(task_id)
 
-    async def step(self, fn: Any, *args: Any) -> Any:
+    async def step(self, fn: Any, *args: Any, final_error: str | None = None) -> Any:
         while True:
             try:
                 return await workflow.execute_activity_method(
                     fn, args=list(args), start_to_close_timeout=STEP_TIMEOUT, retry_policy=RETRY
                 )
             except ActivityError as err:
+                if isinstance(err.cause, ApplicationError) and err.cause.type == final_error:
+                    return FinalError(err.cause.message)
                 name = getattr(fn, "__name__", str(fn))
                 cause = err.cause.message if err.cause else str(err)
                 await self.human_task(
-                    "step_failed", f"{name} failed 3 times: {cause}", assignee="reviewer"
+                    "step_failed", f"{name} failed: {cause}", assignee="reviewer"
                 )
 
     async def human_task(self, kind: str, detail: str, *, assignee: str, wait: bool = True) -> str:
