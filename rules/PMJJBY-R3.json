@@ -1,0 +1,23 @@
+{
+  "id": "PMJJBY-R3",
+  "scheme": "pmjjby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMJJBY-RULES-2022, para 9(1)",
+  "title": "Cover ends at age 55",
+  "requires": [
+    "age_at_death"
+  ],
+  "logic": {
+    "<=": [
+      {
+        "var": "age_at_death"
+      },
+      55
+    ]
+  },
+  "explain": {
+    "pass": "The person was within the PMJJBY age limit.",
+    "fail": "PMJJBY cover stops at age 55, so it had ended before the death."
+  }
+}

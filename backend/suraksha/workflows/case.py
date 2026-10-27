@@ -81,7 +81,8 @@ class CaseWorkflow(StepRunner):
 
         await self._stage("discovery")
         ents: list[Entitlement] = await self.step(CaseActivities.discover, facts, docs)
-        results = [await self.step(CaseActivities.check_eligibility, e, {}) for e in ents]
+        results = [await self.step(CaseActivities.check_eligibility, e, facts, docs, {})
+                   for e in ents]  # fmt: skip
         verdict = await self.step(CaseActivities.verify_entitlements, ents, results)
         self.st.entitlements, self.st.rule_results = ents, results
 
@@ -120,7 +121,8 @@ class CaseWorkflow(StepRunner):
             handles.append(await workflow.start_child_workflow(
                 ClaimWorkflow.run,
                 ClaimInput(case_id=self.case_id, claim_id=claim_id, entitlement=ent,
-                           rule_result=by_id[ent.entitlement_id],
+                           rule_result=by_id[ent.entitlement_id], case_facts=facts,
+                           documents=docs,
                            status_poll_seconds=inp.status_poll_seconds),
                 id=f"claim-{claim_id}",
             ))  # fmt: skip

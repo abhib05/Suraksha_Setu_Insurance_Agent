@@ -103,6 +103,7 @@ class DbStore:
                 s.merge(m.Asset(id=a.asset_id, case_id=facts.case_id, type=a.type.value,
                                 institution=a.institution, identifier_token=a.identifier_token,
                                 card_variant=a.card_variant, last_txn_date=a.last_txn_date,
+                    card_issue_date=a.card_issue_date,
                                 source=a.source))  # fmt: skip
 
     def save_entitlements(self, ents: list[Entitlement], results: list[RuleResult]) -> None:

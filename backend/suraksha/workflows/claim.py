@@ -13,9 +13,11 @@ with workflow.unsafe.imports_passed_through():
     from suraksha.activities.case import CaseActivities
     from suraksha.contracts import (
         Approval,
+        CaseFacts,
         ClaimPacket,
         Decision,
         Entitlement,
+        ExtractedDocument,
         RuleResult,
         RuleStatus,
         VerifierVerdict,
@@ -28,6 +30,8 @@ class ClaimInput(BaseModel):
     claim_id: str
     entitlement: Entitlement
     rule_result: RuleResult
+    case_facts: CaseFacts
+    documents: list[ExtractedDocument]
     known_facts: dict[str, str] = {}
     status_poll_seconds: int = 30
 
@@ -130,7 +134,8 @@ class ClaimWorkflow(StepRunner):
             )
             await workflow.wait_condition(lambda asked=asked: len(self.facts) > asked)
             self.open_task = None
-            result = await self.step(CaseActivities.check_eligibility, ent, self.facts)
+            result = await self.step(CaseActivities.check_eligibility, ent, inp.case_facts,
+                                     inp.documents, self.facts)  # fmt: skip
             self.st.rule_result = result
         if result.status is RuleStatus.NOT_ELIGIBLE:
             self.st.explanation = result.explanation_en
@@ -139,7 +144,7 @@ class ClaimWorkflow(StepRunner):
 
         # 2. Documents: one task per round until nothing required is missing.
         while missing := await self.step(CaseActivities.missing_documents, self.claim_id,
-                                         ent.scheme_id):  # fmt: skip
+                                         ent.scheme_id, inp.documents):  # fmt: skip
             await self._stage("collecting_documents")
             seen = self.uploads
             await self.human_task(

@@ -1,0 +1,23 @@
+{
+  "id": "PMSBY-R3",
+  "scheme": "pmsby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMSBY-SCC-2025 (maximum age 70)",
+  "title": "Cover ends at age 70",
+  "requires": [
+    "age_at_death"
+  ],
+  "logic": {
+    "<=": [
+      {
+        "var": "age_at_death"
+      },
+      70
+    ]
+  },
+  "explain": {
+    "pass": "The person was within the PMSBY age limit.",
+    "fail": "PMSBY cover stops at age 70."
+  }
+}

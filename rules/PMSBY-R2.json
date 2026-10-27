@@ -1,0 +1,23 @@
+{
+  "id": "PMSBY-R2",
+  "scheme": "pmsby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMSBY-SCC-2025 (accidental death cover); scheme exclusions",
+  "title": "Only accidental death is covered",
+  "requires": [
+    "event_type"
+  ],
+  "logic": {
+    "==": [
+      {
+        "var": "event_type"
+      },
+      "accident"
+    ]
+  },
+  "explain": {
+    "pass": "The death was caused by an accident, which PMSBY covers.",
+    "fail": "PMSBY only pays when death is caused by an accident. It does not cover illness, natural death or suicide."
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "case_id": "case_c",
+  "deceased": {
+    "name_token": "tok_case_c_deceased",
+    "date_of_death": "2026-08-20",
+    "place_of_death": "Tumakuru, Karnataka",
+    "event_type": "illness",
+    "age_at_death": 47
+  },
+  "claimants": [
+    {
+      "claimant_id": "case_c-c1",
+      "name_token": "tok_case_c_spouse",
+      "relationship": "spouse",
+      "is_nominee": true,
+      "bank_account_token": "tok_case_c_spouse_acct"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "case_c-a1",
+      "type": "bank_account",
+      "institution": "State Bank of India",
+      "identifier_token": "tok_case_c_acct",
+      "source": "family_statement"
+    },
+    {
+      "asset_id": "case_c-a2",
+      "type": "debit_card",
+      "institution": "State Bank of India",
+      "identifier_token": "tok_case_c_card",
+      "source": "case_c-d1",
+      "card_variant": "rupay_pmjdy",
+      "card_issue_date": "2016-01-15"
+    }
+  ]
+}

@@ -42,6 +42,20 @@ the task is resolved. Agents are stubs (`agents/stubs.py`) until M3–M5. Human 
 come in through the API (`/cases/{id}/workflow/...`, `/claims/{id}/approve|return|...`,
 `/tasks/{id}/resolve`), which records each one in `approval` and the audit log.
 
+## Rules, registry and matchers (M3)
+
+- `registry/*.yaml`: payout, filing channel, required documents, deadlines and sources per
+  scheme. `rules/*.json`: one JSON-logic rule per file, effective-dated, citing its source.
+- The evaluator is three-valued: a missing fact gives **unknown** plus a plain question for
+  the family, never a guess. A scheme is not eligible if any rule fails (citing only those),
+  unknown if any rule cannot be decided, else eligible (citing every rule).
+- Matchers read passbook lines (`txn` fields: `date|description|amount|DR`) for the ₹436
+  PMJJBY and ₹20 PMSBY debits and card use, and propose covers with evidence.
+- `evals/cases/case_{a,b,c}`: eligible / one unknown + missing document / not eligible.
+  Regenerate with `uv run python scripts/make_eval_cases.py`.
+- **Rules need a human check before any real use:** see
+  [docs/rules-spot-check.md](docs/rules-spot-check.md).
+
 ## Privacy plumbing (M1)
 
 - Names, phones, account and Aadhaar numbers are Fernet-encrypted in the `vault` schema;

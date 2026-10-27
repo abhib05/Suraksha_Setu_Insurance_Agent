@@ -47,6 +47,7 @@ class Asset(Contract):
     identifier_token: VaultToken | None = None  # account / card number lives in the vault
     card_variant: str | None = None  # RuPay classic / platinum etc., sets the cover amount
     last_txn_date: date | None = None  # last successful card transaction (RuPay 90-day rule)
+    card_issue_date: date | None = None  # sets the RuPay payout tier (28 Aug 2018 cut-off)
     source: str  # "family_statement" or an ExtractedDocument id
 
 

@@ -1,0 +1,38 @@
+scheme: pmsby
+name: Pradhan Mantri Suraksha Bima Yojana
+ruleset_version: "2025-26.1"
+covers: Accidental death and disability
+payout_inr: 200000  # accidental death; total permanent disability also Rs 2 lakh
+insurer: Public sector general insurer tied up with the account holder's bank
+filing_channel: bank_branch
+
+premium:
+  annual_inr: 20
+  legacy_annual_inr: [12]  # before 1 June 2022
+  passbook_markers: ["PMSBY", "SBY", "SURAKSHA BIMA", "PMSB"]
+
+cover_year: { starts: "06-01", ends: "05-31" }
+age:
+  entry_min: 18
+  cover_ends_at: 70  # age nearest birthday
+lien_days: 30  # NEEDS CONFIRMATION: stated in the bank summary below, not in DFS rules we hold
+
+required_documents: [death_certificate, fir, post_mortem, passbook, id_proof]
+conditional_documents:
+  - when: "the deceased was driving a vehicle"
+    documents: [other]  # driving licence and RC book
+form_templates: [pmsby-claim-form]
+
+time_rules:
+  - id: PMSBY-T1
+    text: Nominee should report the claim to the insurer within 30 days of the accident.
+
+exclusions:
+  - Death that is not accidental (illness, natural causes)
+  - Suicide or self-inflicted injury
+
+sources:
+  - id: PMSBY-SCC-2025
+    title: PMSBY detail of plan (bank scheme summary, Sept 2025)
+    url: https://scc.bank.in/resources/assets/upload/file/910_20250923095851.pdf
+    notes: Sum insured, entry age, premium Rs 20, lien period, 30-day reporting, claim documents.

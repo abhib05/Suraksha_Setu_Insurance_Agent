@@ -1,0 +1,49 @@
+{
+  "id": "PMSBY-R1",
+  "scheme": "pmsby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMSBY-SCC-2025 (premium Rs 20, cover to 31 May each year)",
+  "title": "Cover was paid for the year of the accident",
+  "requires": [
+    "date_of_death",
+    "pmsby_premium_date",
+    "pmsby_premium_inr"
+  ],
+  "logic": {
+    "and": [
+      {
+        "<=": [
+          {
+            "var": "pmsby_premium_date"
+          },
+          {
+            "var": "date_of_death"
+          }
+        ]
+      },
+      {
+        "<=": [
+          {
+            "var": "date_of_death"
+          },
+          {
+            "cover_end": [
+              {
+                "var": "pmsby_premium_date"
+              },
+              {
+                "var": "pmsby_premium_inr"
+              },
+              20
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "explain": {
+    "pass": "The PMSBY premium was paid for the cover year in which the accident happened.",
+    "fail": "The PMSBY premium had not been paid for that year, so the cover was not active."
+  }
+}

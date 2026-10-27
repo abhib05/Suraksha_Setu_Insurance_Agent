@@ -1,0 +1,49 @@
+{
+  "id": "PMJJBY-R1",
+  "scheme": "pmjjby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMJJBY-RULES-2022, paras 3, 4, 6 and 9(2)",
+  "title": "Cover was paid for the year of death",
+  "requires": [
+    "date_of_death",
+    "pmjjby_premium_date",
+    "pmjjby_premium_inr"
+  ],
+  "logic": {
+    "and": [
+      {
+        "<=": [
+          {
+            "var": "pmjjby_premium_date"
+          },
+          {
+            "var": "date_of_death"
+          }
+        ]
+      },
+      {
+        "<=": [
+          {
+            "var": "date_of_death"
+          },
+          {
+            "cover_end": [
+              {
+                "var": "pmjjby_premium_date"
+              },
+              {
+                "var": "pmjjby_premium_inr"
+              },
+              436
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "explain": {
+    "pass": "The PMJJBY premium was paid for the cover year in which the death happened.",
+    "fail": "The PMJJBY premium had not been paid for the year in which the death happened, so the cover was not active."
+  }
+}

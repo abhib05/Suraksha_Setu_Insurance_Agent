@@ -1,0 +1,59 @@
+[
+  {
+    "doc_id": "case_c-d1",
+    "case_id": "case_c",
+    "doc_type": "passbook",
+    "fields": [
+      {
+        "name": "txn",
+        "value": "2026-03-01|ATM WDL RUPAY|1500|DR",
+        "confidence": 0.96
+      },
+      {
+        "name": "txn",
+        "value": "2026-05-27|PMSBY PREMIUM|20|DR",
+        "confidence": 0.96
+      },
+      {
+        "name": "txn",
+        "value": "2026-08-05|PMJJBY NEW ENROLMENT|436|DR",
+        "confidence": 0.96
+      }
+    ],
+    "masked_copy_ref": "evals/cases/case_c/documents/d1.masked.png",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000001"
+  },
+  {
+    "doc_id": "case_c-d2",
+    "case_id": "case_c",
+    "doc_type": "death_certificate",
+    "fields": [
+      {
+        "name": "date_of_death",
+        "value": "2026-08-20",
+        "confidence": 0.96
+      },
+      {
+        "name": "cause",
+        "value": "illness",
+        "confidence": 0.96
+      }
+    ],
+    "masked_copy_ref": "evals/cases/case_c/documents/d2.masked.png",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000002"
+  },
+  {
+    "doc_id": "case_c-d5",
+    "case_id": "case_c",
+    "doc_type": "id_proof",
+    "fields": [
+      {
+        "name": "aadhaar_masked",
+        "value": "XXXX XXXX 7302",
+        "confidence": 0.96
+      }
+    ],
+    "masked_copy_ref": "evals/cases/case_c/documents/d5.masked.png",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000005"
+  }
+]

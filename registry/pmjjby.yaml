@@ -1,0 +1,39 @@
+scheme: pmjjby
+name: Pradhan Mantri Jeevan Jyoti Bima Yojana
+ruleset_version: "2025-26.1"
+covers: Death due to any cause
+payout_inr: 200000
+insurer: LIC or another life insurer tied up with the account holder's bank
+filing_channel: bank_branch  # the bank is the master policy holder; nominee files at the branch
+
+premium:
+  annual_inr: 436
+  # Late enrolment by quarter of the cover year (Sep-Nov, Dec-Feb, Mar-May)
+  pro_rata_inr: [342, 228, 114]
+  legacy_annual_inr: [330]  # before 1 June 2022; still a valid marker in old passbooks
+  passbook_markers: ["PMJJBY", "JJBY", "JEEVAN JYOTI", "PMJJ"]
+
+cover_year: { starts: "06-01", ends: "05-31" }
+age:
+  entry_min: 18
+  entry_max: 50
+  cover_ends_at: 55  # age nearer birthday, subject to annual renewal up to that date
+lien_days: 30  # non-accidental death in the first 30 days after (re)enrolment is not covered
+
+required_documents: [death_certificate, passbook, id_proof]
+conditional_documents:
+  - when: "event_type == accident and death within lien period"
+    documents: [fir, post_mortem]
+form_templates: [pmjjby-claim-form, pmjjby-discharge-receipt]
+
+time_rules:
+  - id: PMJJBY-T1
+    text: >-
+      No hard deadline in the scheme rules; file promptly. Cover for the year must have been
+      paid (auto-debit by 31 May, or pro-rata late enrolment) before the date of death.
+
+sources:
+  - id: PMJJBY-RULES-2022
+    title: Revised Rules for Pradhan Mantri Jeevan Jyoti Bima Yojana (w.e.f. 1.6.2022)
+    url: https://jkb.bank.in/pdfs/fid/PMJJBY/PMJJBY%20Policy%20Details.pdf
+    notes: Paras 2-9. Copy hosted by J&K Bank; same text circulated by DFS to all banks.

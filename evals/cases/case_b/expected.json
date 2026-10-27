@@ -1,0 +1,51 @@
+{
+  "covers": {
+    "pmjjby": "strong",
+    "pmsby": "strong",
+    "rupay": "strong"
+  },
+  "rules": {
+    "pmjjby": {
+      "status": "eligible",
+      "rule_ids": [
+        "PMJJBY-R1",
+        "PMJJBY-R2",
+        "PMJJBY-R3"
+      ]
+    },
+    "pmsby": {
+      "status": "eligible",
+      "rule_ids": [
+        "PMSBY-R1",
+        "PMSBY-R2",
+        "PMSBY-R3",
+        "PMSBY-R4"
+      ]
+    },
+    "rupay": {
+      "status": "unknown",
+      "rule_ids": [
+        "RUPAY-R2"
+      ],
+      "missing_facts": [
+        "card_last_txn_date"
+      ]
+    }
+  },
+  "payout_inr": {
+    "pmjjby": 200000,
+    "pmsby": 200000,
+    "rupay": 100000
+  },
+  "missing_documents": {
+    "pmjjby": [
+      "death_certificate"
+    ],
+    "pmsby": [
+      "death_certificate"
+    ],
+    "rupay": [
+      "death_certificate"
+    ]
+  }
+}

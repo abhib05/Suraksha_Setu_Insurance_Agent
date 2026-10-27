@@ -61,18 +61,18 @@ class CaseActivities:
         return ents
 
     @activity.defn
-    def check_eligibility(self, ent: Entitlement, known_facts: dict[str, str]) -> RuleResult:
-        result = self.agents.check_eligibility(ent, known_facts)
+    def check_eligibility(
+        self, ent: Entitlement, facts: CaseFacts, docs: list[ExtractedDocument],
+        known_facts: dict[str, str],
+    ) -> RuleResult:  # fmt: skip
+        result = self.agents.check_eligibility(ent, facts, docs, known_facts)
         self.store.save_entitlements([ent], [result])
         self.store.record(
-            ent.case_id,
-            "service:rules",
-            "eligibility.checked",
-            input=ent,
-            output=result,
+            ent.case_id, "service:rules", "eligibility.checked", input=ent, output=result,
             rule_versions=[f"{r}@{result.rule_version}" for r in result.rule_ids],
-            detail={"entitlement_id": ent.entitlement_id, "status": result.status.value},
-        )
+            detail={"entitlement_id": ent.entitlement_id, "status": result.status.value,
+                    "rule_ids": result.rule_ids, "missing_facts": result.missing_facts},
+        )  # fmt: skip
         return result
 
     @activity.defn
@@ -106,8 +106,10 @@ class CaseActivities:
         )
 
     @activity.defn
-    def missing_documents(self, claim_id: str, scheme: SchemeId) -> list[DocType]:
-        return self.agents.missing_documents(claim_id, scheme)
+    def missing_documents(
+        self, claim_id: str, scheme: SchemeId, docs: list[ExtractedDocument]
+    ) -> list[DocType]:
+        return self.agents.missing_documents(claim_id, scheme, docs)
 
     @activity.defn
     def note_document_uploaded(self, claim_id: str) -> None:

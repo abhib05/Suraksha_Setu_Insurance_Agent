@@ -1,0 +1,40 @@
+scheme: rupay
+name: RuPay PMJDY card accidental insurance (NPCI RuPay Insurance Program)
+ruleset_version: "2026-27.1"
+covers: Accidental death and permanent total disability of a RuPay PMJDY cardholder
+payout_inr: 200000  # see payout_by_card_issue_date
+payout_by_card_issue_date:
+  - { issued_on_or_before: "2018-08-28", payout_inr: 100000 }
+  - { issued_after: "2018-08-28", payout_inr: 200000 }
+insurer: Insurer appointed by NPCI for the program year (Oriental Insurance for FY2026-27)
+filing_channel: card_issuing_bank  # the bank sends the claim with its declaration to the insurer
+
+usage_condition:
+  days: 90
+  includes_accident_day: true
+  counts: financial or non-financial, any channel (ATM, micro-ATM, POS, e-com, BC, Aadhaar-based)
+  new_card_exception: card issued within the 90 days before the accident is covered without a transaction
+
+required_documents: [death_certificate, fir, post_mortem, id_proof, passbook]
+form_templates: [rupay-claim-form, rupay-bank-declaration]
+
+time_rules:
+  - id: RUPAY-T1
+    text: >-
+      Intimate the claim within 90 days of the accident (exception if the cardholder was
+      hospitalised in critical condition); submit all documents within 60 days of intimation.
+      Eligible claims settle in 10 working days after a complete set is received.
+
+exclusions:
+  - Death that is not accidental
+  - Only one RuPay card per cardholder can be claimed
+
+sources:
+  - id: RUPAY-NPCI-2627
+    title: Annexure A - Claims Process, RuPay Insurance Program 2026-27 for RuPay PMJDY Cards
+    url: https://jkbank.com/sites/default/files/Claim%20Process%20under%20PMJDY%20Rupay%20card%20Insurance%20Program%20%20for%20FY%202026-27.pdf
+    notes: NPCI annexure as circulated by J&K Bank. Time limits, documents, 90-day declaration.
+  - id: RUPAY-IDFC
+    title: IDFC FIRST Bank PMJDY card insurance scheme
+    url: https://www.idfcfirstbank.com/content/dam/IDFCFirstBank/PDF/IDFC-FIRST-BANK-RUPAY-CLASSIC-CARD-INSURANCE-new.pdf
+    notes: Sum insured by card issue date (28 Aug 2018), what counts as a transaction, new-card exception.

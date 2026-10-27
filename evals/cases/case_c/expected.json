@@ -1,0 +1,34 @@
+{
+  "covers": {
+    "pmjjby": "strong",
+    "pmsby": "strong",
+    "rupay": "strong"
+  },
+  "rules": {
+    "pmjjby": {
+      "status": "not_eligible",
+      "rule_ids": [
+        "PMJJBY-R2"
+      ]
+    },
+    "pmsby": {
+      "status": "not_eligible",
+      "rule_ids": [
+        "PMSBY-R2"
+      ]
+    },
+    "rupay": {
+      "status": "not_eligible",
+      "rule_ids": [
+        "RUPAY-R1",
+        "RUPAY-R2"
+      ]
+    }
+  },
+  "payout_inr": {
+    "pmjjby": 200000,
+    "pmsby": 200000,
+    "rupay": 100000
+  },
+  "missing_documents": {}
+}

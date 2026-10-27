@@ -69,6 +69,7 @@ class Asset(Created, Base):
     identifier_token: Mapped[str | None] = mapped_column(String(64))
     card_variant: Mapped[str | None] = mapped_column(String(32))
     last_txn_date: Mapped[date | None] = mapped_column(Date)
+    card_issue_date: Mapped[date | None] = mapped_column(Date)
     source: Mapped[str] = mapped_column(String(64))
 
 

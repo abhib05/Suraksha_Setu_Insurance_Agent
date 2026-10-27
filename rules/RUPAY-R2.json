@@ -1,0 +1,88 @@
+{
+  "id": "RUPAY-R2",
+  "scheme": "rupay",
+  "version": "2026-27.1",
+  "effective_from": "2025-04-01",
+  "source": "RUPAY-NPCI-2627 (90 days transaction criteria); RUPAY-IDFC (new-card exception)",
+  "title": "Card used in the 90 days before the accident, or issued in that window",
+  "requires": [
+    "date_of_death",
+    "card_last_txn_date"
+  ],
+  "logic": {
+    "or": [
+      {
+        "and": [
+          {
+            ">=": [
+              {
+                "days_between": [
+                  {
+                    "var": "card_last_txn_date"
+                  },
+                  {
+                    "var": "date_of_death"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          {
+            "<=": [
+              {
+                "days_between": [
+                  {
+                    "var": "card_last_txn_date"
+                  },
+                  {
+                    "var": "date_of_death"
+                  }
+                ]
+              },
+              90
+            ]
+          }
+        ]
+      },
+      {
+        "and": [
+          {
+            ">=": [
+              {
+                "days_between": [
+                  {
+                    "var": "card_issue_date"
+                  },
+                  {
+                    "var": "date_of_death"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          {
+            "<=": [
+              {
+                "days_between": [
+                  {
+                    "var": "card_issue_date"
+                  },
+                  {
+                    "var": "date_of_death"
+                  }
+                ]
+              },
+              90
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "explain": {
+    "pass": "The RuPay card was used (or newly issued) in the 90 days before the accident, including the accident day.",
+    "fail": "The RuPay card was not used in the 90 days before the accident, so the card cover does not apply."
+  }
+}

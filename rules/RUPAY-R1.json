@@ -1,0 +1,23 @@
+{
+  "id": "RUPAY-R1",
+  "scheme": "rupay",
+  "version": "2026-27.1",
+  "effective_from": "2025-04-01",
+  "source": "RUPAY-IDFC (accidental death and disability only)",
+  "title": "Only accidental death is covered",
+  "requires": [
+    "event_type"
+  ],
+  "logic": {
+    "==": [
+      {
+        "var": "event_type"
+      },
+      "accident"
+    ]
+  },
+  "explain": {
+    "pass": "The death was caused by an accident, which the RuPay card cover pays for.",
+    "fail": "RuPay card insurance only pays for death caused by an accident."
+  }
+}

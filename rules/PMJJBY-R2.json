@@ -1,0 +1,44 @@
+{
+  "id": "PMJJBY-R2",
+  "scheme": "pmjjby",
+  "version": "2025-26.1",
+  "effective_from": "2021-06-01",
+  "source": "PMJJBY-RULES-2022, para 4 (lien period)",
+  "title": "30-day lien period for non-accidental death",
+  "requires": [
+    "event_type",
+    "date_of_death",
+    "pmjjby_enrolment_date"
+  ],
+  "logic": {
+    "or": [
+      {
+        "==": [
+          {
+            "var": "event_type"
+          },
+          "accident"
+        ]
+      },
+      {
+        ">=": [
+          {
+            "days_between": [
+              {
+                "var": "pmjjby_enrolment_date"
+              },
+              {
+                "var": "date_of_death"
+              }
+            ]
+          },
+          30
+        ]
+      }
+    ]
+  },
+  "explain": {
+    "pass": "The death was an accident or happened after the first 30 days of the cover.",
+    "fail": "PMJJBY does not pay for a death from illness within the first 30 days after joining the scheme."
+  }
+}

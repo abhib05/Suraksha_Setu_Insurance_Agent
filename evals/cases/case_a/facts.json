@@ -1,0 +1,37 @@
+{
+  "case_id": "case_a",
+  "deceased": {
+    "name_token": "tok_case_a_deceased",
+    "date_of_death": "2026-09-14",
+    "place_of_death": "Mysuru, Karnataka",
+    "event_type": "accident",
+    "age_at_death": 41
+  },
+  "claimants": [
+    {
+      "claimant_id": "case_a-c1",
+      "name_token": "tok_case_a_spouse",
+      "relationship": "spouse",
+      "is_nominee": true,
+      "bank_account_token": "tok_case_a_spouse_acct"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "case_a-a1",
+      "type": "bank_account",
+      "institution": "State Bank of India",
+      "identifier_token": "tok_case_a_acct",
+      "source": "family_statement"
+    },
+    {
+      "asset_id": "case_a-a2",
+      "type": "debit_card",
+      "institution": "State Bank of India",
+      "identifier_token": "tok_case_a_card",
+      "source": "case_a-d1",
+      "card_variant": "rupay_pmjdy",
+      "card_issue_date": "2019-03-02"
+    }
+  ]
+}

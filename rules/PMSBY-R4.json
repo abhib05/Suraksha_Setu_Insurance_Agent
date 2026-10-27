@@ -1,0 +1,31 @@
+{
+  "id": "PMSBY-R4",
+  "scheme": "pmsby",
+  "version": "2025-26.1",
+  "effective_from": "2022-06-01",
+  "source": "PMSBY-SCC-2025 (lien period) - NEEDS CONFIRMATION against DFS rules",
+  "title": "Risk covered after 30 days from entry",
+  "requires": [
+    "date_of_death",
+    "pmsby_enrolment_date"
+  ],
+  "logic": {
+    ">=": [
+      {
+        "days_between": [
+          {
+            "var": "pmsby_enrolment_date"
+          },
+          {
+            "var": "date_of_death"
+          }
+        ]
+      },
+      30
+    ]
+  },
+  "explain": {
+    "pass": "The accident happened after the first 30 days of PMSBY cover.",
+    "fail": "The accident happened within 30 days of joining PMSBY, before the cover started."
+  }
+}
