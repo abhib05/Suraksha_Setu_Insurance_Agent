@@ -77,11 +77,11 @@ class CaseActivities:
 
     @activity.defn
     def verify_entitlements(
-        self, ents: list[Entitlement], results: list[RuleResult]
+        self, case_id: str, ents: list[Entitlement], results: list[RuleResult]
     ) -> VerifierVerdict:
-        verdict = self.agents.verify_entitlements(ents, results)
+        verdict = self.agents.verify_entitlements(case_id, ents, results)
         self.store.record(
-            ents[0].case_id,
+            case_id,
             "agent:verifier",
             "discovery.verified",
             output=verdict,

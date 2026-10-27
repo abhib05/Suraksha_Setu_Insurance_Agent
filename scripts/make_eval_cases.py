@@ -31,9 +31,9 @@ def facts(case, death, event, age, place, card):
                        "relationship": "spouse", "is_nominee": True,
                        "bank_account_token": f"tok_{case}_spouse_acct"}],
         "assets": [
-            {"asset_id": f"{case}-a1", "type": "bank_account", "institution": "State Bank of India",
+            {"asset_id": f"{case}-a1", "type": "bank_account", "institution": "Kaveri Gramin Bank",
              "identifier_token": f"tok_{case}_acct", "source": "family_statement"},
-            {"asset_id": f"{case}-a2", "type": "debit_card", "institution": "State Bank of India",
+            {"asset_id": f"{case}-a2", "type": "debit_card", "institution": "Kaveri Gramin Bank",
              "identifier_token": f"tok_{case}_card", "source": f"{case}-d1", **card},
         ],
     }  # fmt: skip

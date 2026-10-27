@@ -99,6 +99,9 @@ class DocumentOut(BaseModel):
     sha256: str
     masking_status: str
     aadhaar_masked: int
+    doc_type: str | None = None
+    extraction: dict[str, Any] | None = None
+    extraction_status: str = "pending"  # done | pending (model unavailable) | unsupported
 
 
 @router.post("/{case_id}/documents", response_model=DocumentOut, status_code=201)
@@ -117,12 +120,40 @@ async def upload_document(case_id: str, file: UploadFile, session: DB) -> Docume
         raise HTTPException(403, str(e)) from e
     except docstore.DocumentRejectedError as e:
         raise HTTPException(422, str(e)) from e
+    status = _extract(session, doc)
     return DocumentOut(
         doc_id=doc.id,
         sha256=doc.sha256,
         masking_status=doc.masking_status,
         aadhaar_masked=doc.aadhaar_masked,
+        doc_type=doc.doc_type,
+        extraction=doc.extraction,
+        extraction_status=status,
     )
+
+
+def _extract(session: Session, doc) -> str:
+    """Read the document now so the family sees what we understood. If the model is
+    unavailable the upload still succeeds and extraction is retried later."""
+    from openai import OpenAIError
+
+    from suraksha.services.extraction import extract_and_store
+    from suraksha.tools.llm import AgentOutputError, ReplayMissError, SpendLimitError
+
+    try:
+        extract_and_store(session, doc)
+        return "done"
+    except docstore.NotMaskedError:
+        return "unsupported"
+    except (AgentOutputError, ReplayMissError, SpendLimitError, OpenAIError) as e:
+        audit.append(
+            session,
+            actor="service:extraction",
+            action="document.extraction_pending",
+            case_id=doc.case_id,
+            detail={"doc_id": doc.id, "error": type(e).__name__},
+        )
+        return "pending"
 
 
 class AuditEventOut(BaseModel):

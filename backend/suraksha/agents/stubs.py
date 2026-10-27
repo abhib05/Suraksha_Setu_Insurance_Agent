@@ -122,7 +122,7 @@ class StubAgents:
 
     # verifier agent
     def verify_entitlements(
-        self, ents: list[Entitlement], results: list[RuleResult]
+        self, case_id: str, ents: list[Entitlement], results: list[RuleResult]
     ) -> VerifierVerdict:
         self._maybe_fail("verify_entitlements")
         findings = [
@@ -130,11 +130,14 @@ class StubAgents:
                     reason="Only weak evidence for this cover; a reviewer should confirm.")
             for e in ents if e.strength is Strength.POSSIBLE
         ]  # fmt: skip
-        return VerifierVerdict(
-            subject_id=f"{ents[0].case_id}:discovery", passed=True, findings=findings
-        )
+        return VerifierVerdict(subject_id=f"{case_id}:discovery", passed=True, findings=findings)
 
     def brief(self, ents: list[Entitlement], results: list[RuleResult]) -> str:
+        if not ents:
+            return (
+                "We could not find a cover from the details and documents so far. A "
+                "reviewer will look at your case and may ask for more documents."
+            )
         by_id = {r.entitlement_id: r for r in results}
         lines = []
         for e in ents:
@@ -177,7 +180,7 @@ class StubAgents:
             ])],
             attachments=[Attachment(doc_id=f"{d}-d{i}", label=lbl, order=i)
                          for i, lbl in enumerate(["Passbook", "Death certificate"], start=1)],
-            cover_letter="To the Branch Manager, State Bank of India, Mysuru ..."
+            cover_letter="To the Branch Manager, Kaveri Gramin Bank ..."
             + (f"\n(Revised: {reviewer_comment})" if reviewer_comment else ""),
             checklist=[ChecklistItem(item="Claim form signed by nominee", done=False)],
         )  # fmt: skip

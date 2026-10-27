@@ -19,6 +19,8 @@ with workflow.unsafe.imports_passed_through():
 class CaseInput(BaseModel):
     case_id: str
     status_poll_seconds: int = 30
+    # True when the family is interviewed in chat: wait for them to press "finish"
+    wait_for_intake: bool = False
 
 
 class CaseState(BaseModel):
@@ -44,12 +46,17 @@ class CaseWorkflow(StepRunner):
         super().__init__()
         self.st: CaseState | None = None
         self.consented = False
+        self.intake_done = False
         self.reviewed: list[str] | None = None
         self.chosen: list[str] | None = None
 
     @workflow.signal
     def consent_given(self) -> None:
         self.consented = True
+
+    @workflow.signal
+    def intake_completed(self) -> None:
+        self.intake_done = True
 
     @workflow.signal
     def eligibility_reviewed(self, approved_entitlement_ids: list[str]) -> None:
@@ -75,6 +82,8 @@ class CaseWorkflow(StepRunner):
         await workflow.wait_condition(lambda: self.consented)
 
         await self._stage("interview")
+        if inp.wait_for_intake:
+            await workflow.wait_condition(lambda: self.intake_done)
         facts = await self.step(CaseActivities.interview, self.case_id)
         await self._stage("documents")
         docs = await self.step(CaseActivities.extract_documents, self.case_id)
@@ -83,7 +92,7 @@ class CaseWorkflow(StepRunner):
         ents: list[Entitlement] = await self.step(CaseActivities.discover, facts, docs)
         results = [await self.step(CaseActivities.check_eligibility, e, facts, docs, {})
                    for e in ents]  # fmt: skip
-        verdict = await self.step(CaseActivities.verify_entitlements, ents, results)
+        verdict = await self.step(CaseActivities.verify_entitlements, self.case_id, ents, results)
         self.st.entitlements, self.st.rule_results = ents, results
 
         # Eligibility gate only for unsure results: weak evidence or a verifier concern.

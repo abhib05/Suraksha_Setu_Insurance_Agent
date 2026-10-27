@@ -59,11 +59,20 @@ async def signal_consent_if_running(case_id: str) -> None:
         pass
 
 
+async def signal_intake_if_running(case_id: str) -> None:
+    try:
+        client = await temporal()
+        await client.get_workflow_handle(case_wf_id(case_id)).signal(CaseWorkflow.intake_completed)
+    except (HTTPException, RPCError):
+        pass
+
+
 # --- case ---------------------------------------------------------------------------
 
 
 class StartIn(BaseModel):
     status_poll_seconds: int = Field(default=30, ge=1)
+    wait_for_intake: bool = True  # the family is interviewed in chat
 
 
 @router.post("/cases/{case_id}/workflow", status_code=201)
@@ -74,7 +83,11 @@ async def start_case_workflow(case_id: str, session: DB, body: StartIn | None = 
 
     handle = await client.start_workflow(
         CaseWorkflow.run,
-        CaseInput(case_id=case_id, status_poll_seconds=(body or StartIn()).status_poll_seconds),
+        CaseInput(
+            case_id=case_id,
+            status_poll_seconds=(body or StartIn()).status_poll_seconds,
+            wait_for_intake=(body or StartIn()).wait_for_intake,
+        ),
         id=case_wf_id(case_id),
         task_queue=get_settings().temporal_task_queue,
     )

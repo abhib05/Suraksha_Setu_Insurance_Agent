@@ -20,14 +20,14 @@
     {
       "asset_id": "case_c-a1",
       "type": "bank_account",
-      "institution": "State Bank of India",
+      "institution": "Kaveri Gramin Bank",
       "identifier_token": "tok_case_c_acct",
       "source": "family_statement"
     },
     {
       "asset_id": "case_c-a2",
       "type": "debit_card",
-      "institution": "State Bank of India",
+      "institution": "Kaveri Gramin Bank",
       "identifier_token": "tok_case_c_card",
       "source": "case_c-d1",
       "card_variant": "rupay_pmjdy",

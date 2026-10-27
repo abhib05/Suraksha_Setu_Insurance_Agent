@@ -26,3 +26,6 @@ evals/recordings/live/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local spend ledger (recorded responses for synthetic cases ARE committed)
+evals/recordings/spend.jsonl

@@ -194,6 +194,50 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "List Documents",
+        "operationId": "list_documents_cases__case_id__documents_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentView"
+                  },
+                  "title": "Response List Documents Cases  Case Id  Documents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/cases/{case_id}/audit": {
@@ -895,6 +939,239 @@
         }
       }
     },
+    "/cases/{case_id}/chat": {
+      "post": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Chat",
+        "operationId": "chat_cases__case_id__chat_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Chat History",
+        "operationId": "chat_history_cases__case_id__chat_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatHistoryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/intake/finish": {
+      "post": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Finish Intake",
+        "operationId": "finish_intake_cases__case_id__intake_finish_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Finish Intake Cases  Case Id  Intake Finish Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/documents/extract-pending": {
+      "post": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Extract Pending",
+        "description": "Re-read documents uploaded while the model was unavailable.",
+        "operationId": "extract_pending_cases__case_id__documents_extract_pending_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Extract Pending Cases  Case Id  Documents Extract Pending Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/documents/{doc_id}/image": {
+      "get": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Document Image",
+        "description": "The masked working copy only; originals never leave the docstore over HTTP.",
+        "operationId": "document_image_cases__case_id__documents__doc_id__image_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -1096,6 +1373,99 @@
         ],
         "title": "ChainOut"
       },
+      "ChatHistoryOut": {
+        "properties": {
+          "messages": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "consent_active": {
+            "type": "boolean",
+            "title": "Consent Active"
+          },
+          "intake_complete": {
+            "type": "boolean",
+            "title": "Intake Complete"
+          },
+          "finished": {
+            "type": "boolean",
+            "title": "Finished"
+          },
+          "known": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Known"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages",
+          "consent_active",
+          "intake_complete",
+          "finished",
+          "known"
+        ],
+        "title": "ChatHistoryOut"
+      },
+      "ChatIn": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatIn"
+      },
+      "ChatOut": {
+        "properties": {
+          "reply": {
+            "type": "string",
+            "title": "Reply"
+          },
+          "consent_active": {
+            "type": "boolean",
+            "title": "Consent Active"
+          },
+          "intake_complete": {
+            "type": "boolean",
+            "title": "Intake Complete"
+          },
+          "known": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Known"
+          },
+          "flagged": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flagged"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reply",
+          "consent_active",
+          "intake_complete",
+          "known"
+        ],
+        "title": "ChatOut"
+      },
       "ChooseIn": {
         "properties": {
           "entitlement_ids": {
@@ -1228,6 +1598,34 @@
           "aadhaar_masked": {
             "type": "integer",
             "title": "Aadhaar Masked"
+          },
+          "doc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Type"
+          },
+          "extraction": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction"
+          },
+          "extraction_status": {
+            "type": "string",
+            "title": "Extraction Status",
+            "default": "pending"
           }
         },
         "type": "object",
@@ -1238,6 +1636,65 @@
           "aadhaar_masked"
         ],
         "title": "DocumentOut"
+      },
+      "DocumentView": {
+        "properties": {
+          "doc_id": {
+            "type": "string",
+            "title": "Doc Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "masking_status": {
+            "type": "string",
+            "title": "Masking Status"
+          },
+          "aadhaar_masked": {
+            "type": "integer",
+            "title": "Aadhaar Masked"
+          },
+          "doc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Type"
+          },
+          "extraction": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "doc_id",
+          "filename",
+          "created_at",
+          "masking_status",
+          "aadhaar_masked",
+          "doc_type",
+          "extraction"
+        ],
+        "title": "DocumentView"
       },
       "EligibilityReviewIn": {
         "properties": {
@@ -1350,6 +1807,11 @@
             "minimum": 1.0,
             "title": "Status Poll Seconds",
             "default": 30
+          },
+          "wait_for_intake": {
+            "type": "boolean",
+            "title": "Wait For Intake",
+            "default": true
           }
         },
         "type": "object",

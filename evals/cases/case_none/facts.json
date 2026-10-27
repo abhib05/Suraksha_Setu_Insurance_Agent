@@ -1,0 +1,20 @@
+{
+  "case_id": "case_none",
+  "deceased": {
+    "name_token": "tok_case_none_deceased",
+    "date_of_death": "2026-09-14",
+    "place_of_death": "Mysuru, Karnataka",
+    "event_type": "accident",
+    "age_at_death": 41
+  },
+  "claimants": [
+    {
+      "claimant_id": "case_none-c1",
+      "name_token": "tok_case_none_spouse",
+      "relationship": "spouse",
+      "is_nominee": true,
+      "bank_account_token": "tok_case_none_spouse_acct"
+    }
+  ],
+  "assets": []
+}

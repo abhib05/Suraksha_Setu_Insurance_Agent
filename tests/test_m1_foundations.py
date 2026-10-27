@@ -56,7 +56,9 @@ def test_case_consent_document_all_audited(client):
     assert doc["masking_status"] == "masked" and doc["aadhaar_masked"] == 1
 
     actions = [e["action"] for e in client.get(f"/cases/{case_id}/audit").json()]
-    assert actions == ["case.opened", "consent.given", "document.stored"]
+    # Without a model key the upload still succeeds; extraction is marked pending.
+    assert actions[:3] == ["case.opened", "consent.given", "document.stored"]
+    assert set(actions[3:]) <= {"document.extraction_pending", "document.extracted"}
     assert client.get("/audit/verify").json()["ok"] is True
 
     # After withdrawal, writes are refused again.

@@ -1,5 +1,5 @@
 """Temporal worker: `python -m suraksha.workflows.worker`. Runs both workflows and all
-activities, with stub agents until M7 swaps in the real ones."""
+activities, with LiveAgents (AGENTS=live, default) or fixture stubs (AGENTS=stub)."""
 
 import asyncio
 import logging
@@ -11,6 +11,7 @@ from temporalio.worker import Worker
 
 from suraksha.activities.case import CaseActivities
 from suraksha.activities.store import DbStore
+from suraksha.agents.live import LiveAgents
 from suraksha.agents.stubs import StubAgents
 from suraksha.config import get_settings
 from suraksha.workflows.case import CaseWorkflow
@@ -27,7 +28,8 @@ async def connect() -> Client:
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
     client = await connect()
-    activities = CaseActivities(StubAgents(), DbStore())
+    agents = LiveAgents() if get_settings().agents == "live" else StubAgents()
+    activities = CaseActivities(agents, DbStore())
     worker = Worker(
         client,
         task_queue=get_settings().temporal_task_queue,

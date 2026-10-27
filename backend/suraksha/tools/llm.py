@@ -78,7 +78,8 @@ def complete(
             "json_schema": {
                 "name": response_schema.__name__,
                 "schema": response_schema.model_json_schema(),
-                "strict": True,
+                # not strict: strict mode forbids optional fields, which our contracts use
+                "strict": False,
             },
         }
 
@@ -99,7 +100,7 @@ def complete(
     from openai import OpenAI  # imported here so replay-only test runs need no network client
 
     client = OpenAI(api_key=settings.model_api_key, base_url=settings.model_base_url)
-    response = client.chat.completions.create(**payload)
+    response = _create(client, payload, response_schema)
     usage = response.usage
     in_tok = usage.prompt_tokens if usage else 0
     out_tok = usage.completion_tokens if usage else 0
@@ -121,6 +122,74 @@ def complete(
         recording.parent.mkdir(parents=True, exist_ok=True)
         recording.write_text(result.model_dump_json(indent=2), encoding="utf-8")
     return result
+
+
+_json_schema_ok: bool | None = None  # learned on the first structured call
+
+
+def _create(client: Any, payload: dict[str, Any], schema: type[BaseModel] | None) -> Any:
+    """Call the API. If it rejects `json_schema` response formats, fall back to plain JSON
+    mode with the schema spelled out in the prompt, and remember that for later calls."""
+    global _json_schema_ok
+    from openai import BadRequestError
+
+    if schema is not None and _json_schema_ok is False:
+        return client.chat.completions.create(**_json_mode(payload, schema))
+    try:
+        response = client.chat.completions.create(**payload)
+        if schema is not None:
+            _json_schema_ok = True
+        return response
+    except BadRequestError as e:
+        if schema is None or "response_format" not in str(e) and "json_schema" not in str(e):
+            raise
+        log.warning("json_schema response_format rejected; falling back to json_object")
+        _json_schema_ok = False
+        return client.chat.completions.create(**_json_mode(payload, schema))
+
+
+def _json_mode(payload: dict[str, Any], schema: type[BaseModel]) -> dict[str, Any]:
+    spec = json.dumps(schema.model_json_schema(), ensure_ascii=False)
+    note = {
+        "role": "system",
+        "content": f"Reply with one JSON object matching this schema:\n{spec}",
+    }
+    return {**payload, "messages": [*payload["messages"], note],
+            "response_format": {"type": "json_object"}}  # fmt: skip
+
+
+class AgentOutputError(RuntimeError):
+    """The model's reply did not match the schema, even after one repair attempt."""
+
+
+def parse_json(text: str, schema: type[BaseModel]) -> BaseModel:
+    body = text.strip()
+    if body.startswith("```"):
+        body = body.split("\n", 1)[1].rsplit("```", 1)[0]
+    return schema.model_validate_json(body)
+
+
+def complete_json[T: BaseModel](
+    agent: str,
+    messages: list[dict[str, Any]],
+    schema: type[T],
+    *,
+    settings: Settings | None = None,
+) -> tuple[T, LLMResult]:
+    """A structured call: the reply parsed into `schema`, with one repair round if it does
+    not validate (the error is shown to the model, never silently fixed by us)."""
+    result = complete(agent, messages, response_schema=schema, settings=settings)
+    try:
+        return parse_json(result.text, schema), result
+    except ValueError as err:
+        repair = [*messages, {"role": "assistant", "content": result.text},
+                  {"role": "user", "content": f"That reply did not match the schema: {err}. "
+                   "Reply again with only the corrected JSON."}]  # fmt: skip
+        result = complete(agent, repair, response_schema=schema, settings=settings)
+        try:
+            return parse_json(result.text, schema), result
+        except ValueError as err2:
+            raise AgentOutputError(f"{agent}: {err2}") from err2
 
 
 def _log_spend(settings: Settings, key: str, result: LLMResult) -> None:

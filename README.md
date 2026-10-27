@@ -42,6 +42,26 @@ the task is resolved. Agents are stubs (`agents/stubs.py`) until M3–M5. Human 
 come in through the API (`/cases/{id}/workflow/...`, `/claims/{id}/approve|return|...`,
 `/tasks/{id}/resolve`), which records each one in `approval` and the audit log.
 
+## Conversation and document agents (M4)
+
+- **Intake page** (console): chat, an "I agree" consent button, photo upload with the
+  Aadhaar-masked preview beside the fields read from it, then "Finish" → the case workflow
+  checks covers and shows the briefing for the family to choose claims.
+- **Conversation agent** (`agents/conversation/`): condolence and the three trust facts, one
+  question at a time, read-back. Code enforces what the prompt asks: nothing is kept before
+  consent, a reply that promises money is rewritten once then replaced, names go straight
+  to the vault, and chat is stored encrypted.
+- **Screening** runs first on every message: an injection attempt gets a fixed reply and
+  never reaches the agent; distress creates a call-back task and shows Tele-MANAS 14416.
+- **Document agent** (`agents/document/`): reads only the masked working copy; unknown field
+  names are dropped, any full Aadhaar number is re-masked, text addressed to an AI becomes a
+  tamper signal, and low-confidence fields or tampering create a reviewer task.
+- Without a model key everything still runs: chat answers "try again later", uploads are
+  stored with extraction `pending` (`POST /cases/{id}/documents/extract-pending` retries).
+- **Live check:** `uv run python scripts/eval_m4.py` (needs `MODEL_API_KEY`) scores the
+  agents on the case photos and case A's chat, and records responses for replay.
+  Regenerate the fake photos with `uv run python scripts/make_fake_documents.py`.
+
 ## Rules, registry and matchers (M3)
 
 - `registry/*.yaml`: payout, filing channel, required documents, deadlines and sources per

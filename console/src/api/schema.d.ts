@@ -62,7 +62,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Documents */
+        get: operations["list_documents_cases__case_id__documents_get"];
         put?: never;
         /** Upload Document */
         post: operations["upload_document_cases__case_id__documents_post"];
@@ -294,6 +295,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cases/{case_id}/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chat History */
+        get: operations["chat_history_cases__case_id__chat_get"];
+        put?: never;
+        /** Chat */
+        post: operations["chat_cases__case_id__chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/intake/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish Intake */
+        post: operations["finish_intake_cases__case_id__intake_finish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/documents/extract-pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Extract Pending
+         * @description Re-read documents uploaded while the model was unavailable.
+         */
+        post: operations["extract_pending_cases__case_id__documents_extract_pending_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/documents/{doc_id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Image
+         * @description The masked working copy only; originals never leave the docstore over HTTP.
+         */
+        get: operations["document_image_cases__case_id__documents__doc_id__image_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -374,6 +450,43 @@ export interface components {
             /** First Bad Id */
             first_bad_id: number | null;
         };
+        /** ChatHistoryOut */
+        ChatHistoryOut: {
+            /** Messages */
+            messages: {
+                [key: string]: string;
+            }[];
+            /** Consent Active */
+            consent_active: boolean;
+            /** Intake Complete */
+            intake_complete: boolean;
+            /** Finished */
+            finished: boolean;
+            /** Known */
+            known: {
+                [key: string]: unknown;
+            };
+        };
+        /** ChatIn */
+        ChatIn: {
+            /** Message */
+            message: string;
+        };
+        /** ChatOut */
+        ChatOut: {
+            /** Reply */
+            reply: string;
+            /** Consent Active */
+            consent_active: boolean;
+            /** Intake Complete */
+            intake_complete: boolean;
+            /** Known */
+            known: {
+                [key: string]: unknown;
+            };
+            /** Flagged */
+            flagged?: string | null;
+        };
         /** ChooseIn */
         ChooseIn: {
             /** Entitlement Ids */
@@ -433,6 +546,39 @@ export interface components {
             masking_status: string;
             /** Aadhaar Masked */
             aadhaar_masked: number;
+            /** Doc Type */
+            doc_type?: string | null;
+            /** Extraction */
+            extraction?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Extraction Status
+             * @default pending
+             */
+            extraction_status: string;
+        };
+        /** DocumentView */
+        DocumentView: {
+            /** Doc Id */
+            doc_id: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Masking Status */
+            masking_status: string;
+            /** Aadhaar Masked */
+            aadhaar_masked: number;
+            /** Doc Type */
+            doc_type: string | null;
+            /** Extraction */
+            extraction: {
+                [key: string]: unknown;
+            } | null;
         };
         /** EligibilityReviewIn */
         EligibilityReviewIn: {
@@ -476,6 +622,11 @@ export interface components {
              * @default 30
              */
             status_poll_seconds: number;
+            /**
+             * Wait For Intake
+             * @default true
+             */
+            wait_for_intake: boolean;
         };
         /** TaskOut */
         TaskOut: {
@@ -609,6 +760,37 @@ export interface operations {
                     "application/json": {
                         [key: string]: number;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_cases__case_id__documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"][];
                 };
             };
             /** @description Validation Error */
@@ -1122,6 +1304,170 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_history_cases__case_id__chat_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHistoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_cases__case_id__chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finish_intake_cases__case_id__intake_finish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_pending_cases__case_id__documents_extract_pending_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_image_cases__case_id__documents__doc_id__image_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

@@ -186,3 +186,26 @@ class VaultSecret(Base):
     kind: Mapped[str] = mapped_column(String(24))  # name | phone | account | card | aadhaar
     ciphertext: Mapped[bytes] = mapped_column(LargeBinary)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class ChatMessage(Base):
+    """Family chat, Fernet-encrypted: people type names and numbers into chat."""
+
+    __tablename__ = "chat_message"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    case_id: Mapped[str] = mapped_column(ForeignKey("case.id"), index=True)
+    role: Mapped[str] = mapped_column(String(16))  # user | assistant
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Intake(Base):
+    """The interview so far. Names are vault tokens; never plain text."""
+
+    __tablename__ = "intake"
+    case_id: Mapped[str] = mapped_column(ForeignKey("case.id"), primary_key=True)
+    draft: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    complete: Mapped[bool] = mapped_column(Boolean, default=False)  # agent: read-back confirmed
+    finished: Mapped[bool] = mapped_column(Boolean, default=False)  # family pressed "finish"
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now,
+                                                 onupdate=_now)  # fmt: skip

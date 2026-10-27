@@ -34,11 +34,12 @@ async def env():
 
 
 class Harness:
-    def __init__(self, env: WorkflowEnvironment, scenario: Scenario):
+    def __init__(self, env: WorkflowEnvironment, scenario: Scenario, **case_input):
         self.env, self.client = env, env.client
         self.store = MemoryStore()
         self.acts = CaseActivities(StubAgents(scenario), self.store)
         self.case_id = f"case_{uuid.uuid4().hex[:8]}"
+        self.case_input = case_input
 
     async def __aenter__(self):
         self.worker = Worker(
@@ -47,7 +48,8 @@ class Harness:
         )  # fmt: skip
         self._run = asyncio.create_task(self.worker.run())
         self.case: WorkflowHandle = await self.client.start_workflow(
-            CaseWorkflow.run, CaseInput(case_id=self.case_id), id=f"case-{self.case_id}",
+            CaseWorkflow.run, CaseInput(case_id=self.case_id, **self.case_input),
+            id=f"case-{self.case_id}",
             task_queue=QUEUE,
         )  # fmt: skip
         return self
@@ -239,3 +241,23 @@ async def test_short_payment_opens_appeal(env):
 
 async def test_client_connects_with_pydantic_converter(env):
     assert isinstance(env.client, Client)
+
+
+async def test_chat_intake_waits_for_finish(env):
+    async with Harness(env, Scenario(), wait_for_intake=True) as h:
+        await h.case.signal(CaseWorkflow.consent_given)
+        await h.until(h.case, stage("interview"))
+        await env.sleep(3600)
+        assert (await h.case.query("state"))["stage"] == "interview"
+        assert "interview.completed" not in h.store.actions(h.case_id)
+        await h.case.signal(CaseWorkflow.intake_completed)
+        await h.until(h.case, stage("awaiting_choice"))
+
+
+async def test_case_with_no_covers_closes_with_an_explanation(env):
+    async with Harness(env, Scenario(fixture="case_none")) as h:
+        await h.case.signal(CaseWorkflow.consent_given)
+        st = await h.until(h.case, stage("awaiting_choice"))
+        assert st["entitlements"] == [] and "could not find a cover" in st["briefing"]
+        await h.case.signal(CaseWorkflow.choose_covers, [])
+        assert (await h.case.result()).claims == []
