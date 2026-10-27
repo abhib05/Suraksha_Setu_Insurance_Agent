@@ -1,6 +1,7 @@
-"""`uv run poe dev`: start Postgres + Temporal in Docker, then API, mock portal and console.
+"""`uv run poe dev`: start Postgres + Temporal in Docker, then API, Temporal worker, mock portal
+and console.
 
-Ctrl+C stops the three app processes; containers keep running (`uv run poe down` stops them).
+Ctrl+C stops the app processes; containers keep running (`uv run poe down` stops them).
 """
 
 import shutil
@@ -27,6 +28,7 @@ PROCESSES = {
         "backend",
     ],
     "portal": [*UVICORN, "mock_portal.app:app", "--port", "8100", "--reload-dir", "mock_portal"],
+    "worker": [sys.executable, "-m", "suraksha.workflows.worker"],
     "console": [NPM, "run", "dev", "--prefix", "console"],
 }
 

@@ -56,6 +56,7 @@ dev = { cmd = "python scripts/dev.py", help = "Start Postgres, Temporal, API, mo
 infra = { cmd = "docker compose up -d", help = "Start Postgres and Temporal only" }
 down = { cmd = "docker compose down", help = "Stop Postgres and Temporal" }
 api = { cmd = "uvicorn suraksha.api.main:app --reload --port 8000 --app-dir backend", help = "Run the API" }
+worker = { cmd = "python -m suraksha.workflows.worker", help = "Run the Temporal worker" }
 portal = { cmd = "uvicorn mock_portal.app:app --reload --port 8100", help = "Run the mock partner portal" }
 migrate = { cmd = "alembic upgrade head", help = "Apply database migrations" }
 test = { cmd = "pytest", help = "Run backend tests (DB tests need `poe infra`)" }

@@ -28,6 +28,20 @@ uv run poe dev                # Postgres + Temporal (Docker), API, mock portal, 
 tests need `poe infra` running), `poe migrate`, `poe lint`, `poe check-models`, `poe openapi`,
 `poe down`. `uv run poe` lists them all.
 
+## Workflows (M2)
+
+`case_workflow` (one per death): consent → interview → documents → discovery → eligibility →
+reviewer check only for weak evidence or verifier warnings → briefing → the family picks
+covers → one `claim_workflow` per cover. `claim_workflow`: rules (unknown → ask the family;
+not eligible → close with the reason) → documents → build and verify the packet → **human
+approval of that exact packet version** (returned → rebuild) → submit → poll until paid →
+a human confirms the payout (shortfall → appeal task).
+
+Every step retries 3 times with backoff; then it becomes a reviewer task and resumes when
+the task is resolved. Agents are stubs (`agents/stubs.py`) until M3–M5. Human decisions
+come in through the API (`/cases/{id}/workflow/...`, `/claims/{id}/approve|return|...`,
+`/tasks/{id}/resolve`), which records each one in `approval` and the audit log.
+
 ## Privacy plumbing (M1)
 
 - Names, phones, account and Aadhaar numbers are Fernet-encrypted in the `vault` schema;

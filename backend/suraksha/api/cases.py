@@ -69,7 +69,7 @@ class ConsentOut(BaseModel):
 
 
 @router.post("/{case_id}/consent", response_model=ConsentOut, status_code=201)
-def give_consent(case_id: str, body: ConsentIn, session: DB) -> ConsentOut:
+async def give_consent(case_id: str, body: ConsentIn, session: DB) -> ConsentOut:
     _case(session, case_id)
     token = vault.tokenize(session, vault.SecretKind.NAME, body.given_by_name)
     record = ConsentRecord(
@@ -80,7 +80,12 @@ def give_consent(case_id: str, body: ConsentIn, session: DB) -> ConsentOut:
         method=body.method,
         timestamp=datetime.now(UTC),
     )
-    return ConsentOut(consent_id=consent.record(session, record), given_by=token)
+    consent_id = consent.record(session, record)
+    session.commit()  # the workflow may act on consent as soon as it is signalled
+    from suraksha.api.workflows import signal_consent_if_running
+
+    await signal_consent_if_running(case_id)
+    return ConsentOut(consent_id=consent_id, given_by=token)
 
 
 @router.post("/{case_id}/consent/withdraw")
