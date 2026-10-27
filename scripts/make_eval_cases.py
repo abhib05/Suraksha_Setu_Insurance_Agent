@@ -175,7 +175,45 @@ CASES = {
     ),
 }
 
+
+def printed_fields(doc: dict, facts: dict) -> dict:
+    """Add the fields scripts/make_fake_documents.py prints on each photo, so the fixture
+    says exactly what a correct reading of the image should return."""
+    dec = facts["deceased"]
+    city = dec["place_of_death"].split(",")[0]
+    n = doc["doc_id"].rsplit("-d", 1)[1]
+    have = {f["name"] for f in doc["fields"]}
+    bank = next(a for a in facts["assets"] if a["type"] == "bank_account")
+    extra = {
+        "passbook": [
+            ("account_number_last4", "4417"),
+            ("institution", bank["institution"]),
+            ("branch", city),
+        ],
+        "death_certificate": [
+            ("place_of_death", dec["place_of_death"]),
+            ("cause", dec["event_type"]),
+            ("registration_number", f"SMP/{facts['case_id'].upper()}/2026/0{n}"),
+        ],
+        "fir": [
+            ("police_station", f"{city} Traffic PS"),
+            ("date_of_incident", dec["date_of_death"]),
+            ("fir_number", f"0{n}/2026"),
+        ],
+        "post_mortem": [
+            ("hospital", "District Hospital (fictional)"),
+            ("date_of_examination", dec["date_of_death"]),
+        ],
+        "id_proof": [("date_of_birth", "1988-01-01")],
+    }.get(doc["doc_type"], [])
+    for k, v in extra:
+        if k not in have:
+            doc["fields"].append({"name": k, "value": v, "confidence": 0.96})
+    return doc
+
+
 for name, c in CASES.items():
+    c["documents"] = [printed_fields(d, c["facts"]) for d in c["documents"]]
     folder = ROOT / "evals" / "cases" / name
     folder.mkdir(parents=True, exist_ok=True)
     CaseFacts.model_validate(c["facts"])  # contracts must accept every fixture

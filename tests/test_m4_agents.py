@@ -295,3 +295,19 @@ def test_doc_type_enum_covers_prompt_table():
               ).read_text()  # fmt: skip
     for t in DocType:
         assert f"`{t.value}`" in prompt
+
+
+@pytest.mark.usefixtures("migrated_db")
+def test_names_read_from_documents_are_vaulted(docstore_dir, monkeypatch):
+    reading = DocumentReading(doc_type="death_certificate", fields=[
+        ReadField(name="name", value="Ramesh Sample", confidence=0.9),
+        ReadField(name="date_of_death", value="2026-09-14", confidence=0.9)])  # fmt: skip
+    monkeypatch.setattr(llm, "complete_json", FakeModel(document=[reading]))
+    client = TestClient(app)
+    case_id = client.post("/cases", json={}).json()["case_id"]
+    client.post(f"/cases/{case_id}/consent", json={"given_by_name": "A"})
+    photo = (CASE_A / "documents" / "d2.jpg").read_bytes()
+    r = client.post(f"/cases/{case_id}/documents", files={"file": ("dc.jpg", photo, "image/jpeg")})
+    ext = r.json()["extraction"]
+    values = {f["name"]: f["value"] for f in ext["fields"]}
+    assert values["name"].startswith("tok_") and values["date_of_death"] == "2026-09-14"

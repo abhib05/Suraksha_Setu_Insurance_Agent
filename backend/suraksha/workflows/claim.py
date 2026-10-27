@@ -12,6 +12,7 @@ from temporalio import workflow
 with workflow.unsafe.imports_passed_through():
     from suraksha.activities.case import CaseActivities
     from suraksha.contracts import (
+        Action,
         Approval,
         CaseFacts,
         ClaimPacket,
@@ -20,6 +21,7 @@ with workflow.unsafe.imports_passed_through():
         ExtractedDocument,
         RuleResult,
         RuleStatus,
+        Severity,
         VerifierVerdict,
     )
     from suraksha.workflows.base import StepRunner
@@ -48,6 +50,7 @@ class ClaimState(BaseModel):
     paid_amount_inr: int | None = None
     open_task: str | None = None
     explanation: str | None = None
+    summary: str | None = None  # coordinator's note for the reviewer
 
 
 class ClaimOutcome(BaseModel):
@@ -163,11 +166,15 @@ class ClaimWorkflow(StepRunner):
             self.st.packet_version += 1
             await self._stage("building_packet")
             packet = await self.step(CaseActivities.build_packet, self.claim_id, ent,
-                                     self.st.packet_version, comment)  # fmt: skip
-            verdict = await self.step(CaseActivities.verify_packet, self.case_id, packet)
-            self.st.packet, self.st.verdict = packet, verdict
-            if not verdict.passed:
-                reasons = "; ".join(f.reason for f in verdict.findings)
+                                     inp.case_facts, inp.documents, self.st.packet_version,
+                                     comment)  # fmt: skip
+            verdict = await self.step(CaseActivities.verify_packet, self.case_id, packet, ent,
+                                      inp.case_facts, inp.documents, result)  # fmt: skip
+            nxt = await self.step(CaseActivities.coordinate, self.case_id, packet, verdict, result)
+            self.st.packet, self.st.verdict, self.st.summary = packet, verdict, nxt.summary
+            if nxt.action is not Action.REQUEST_APPROVAL:
+                reasons = "; ".join(f.reason for f in verdict.findings
+                                    if f.severity is Severity.BLOCKER)  # fmt: skip
                 await self.human_task(
                     "verifier_failed", f"v{packet.version}: {reasons}", assignee="reviewer"
                 )

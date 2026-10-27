@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ scheme_name }} claim · {{ packet.claim_id }} v{{ packet.version }}</title>
+<style>
+  :root { --fg:#1d1d1b; --muted:#6b6a64; --line:#d9d6cc; --bg:#fbfaf6; --ok:#0f6b5c;
+          --warn:#9a5b00; --bad:#b42318; }
+  @media (prefers-color-scheme: dark) { :root:not([data-print]) { --fg:#ecebe6; --muted:#a3a29a;
+          --line:#34342f; --bg:#161614; --ok:#4fc2ab; --warn:#e6a23c; --bad:#f97066; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+  h1 { font-size: 1.4rem; margin: 0; } h2 { font-size: 1.1rem; margin: 28px 0 8px; }
+  .muted { color: var(--muted); } .mono { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
+  .verdict { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); margin: 16px 0; }
+  .verdict.pass { border-color: var(--ok); } .verdict.fail { border-color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { width: 34%; font-weight: 500; }
+  .src { font-size: .78rem; color: var(--muted); }
+  .finding { font-size: .85rem; margin-top: 4px; }
+  .blocker { color: var(--bad); } .warning { color: var(--warn); } .info { color: var(--muted); }
+  .empty { color: var(--bad); font-style: italic; }
+  pre { white-space: pre-wrap; font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  ol, ul { padding-left: 20px; }
+  footer { margin-top: 32px; font-size: .8rem; }
+  @media print { body { background: #fff; } .verdict, .src, .finding { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>{{ scheme_name }}</h1>
+    <span class="muted">Claim {{ packet.claim_id }} · packet v{{ packet.version }}</span>
+  </header>
+
+  {% if verdict %}
+  <div class="verdict {{ 'pass' if verdict.passed else 'fail' }}">
+    <strong>Verifier: {{ 'passed' if verdict.passed else 'blocked' }}</strong>
+    {% for f in packet_findings %}<div class="finding {{ f.severity.value }}">{{ f.severity.value }}: {{ f.reason }}</div>{% endfor %}
+    {% if summary %}<p>{{ summary }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {% for form in forms %}
+  <h2>{{ form.title }}</h2>
+  <table>
+    {% for row in form.rows %}
+    <tr>
+      <th>{{ row.label }}</th>
+      <td>
+        {% if row.value is none %}<span class="empty">not found</span>{% else %}{{ row.value }}{% endif %}
+        {% if row.source %}<div class="src">source: {{ row.source }}</div>{% endif %}
+        {% for f in row.findings %}<div class="finding {{ f.severity.value }}">{{ f.severity.value }}: {{ f.reason }}</div>{% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+
+  <h2>Cover letter</h2>
+  <pre>{{ cover_letter }}</pre>
+
+  <h2>Enclosures</h2>
+  <ol>{% for a in packet.attachments %}<li>{{ a.label }} <span class="mono muted">{{ a.doc_id }}</span></li>{% endfor %}</ol>
+
+  <h2>Before filing</h2>
+  <ul>{% for c in packet.checklist %}<li>{{ '☑' if c.done else '☐' }} {{ c.item }}</li>{% endfor %}</ul>
+
+  <footer class="muted">Prepared by Suraksha Setu for human review. Nothing is filed until a reviewer
+  approves this exact version. Rules: {{ rule_ids }}.</footer>
+</main>
+</body>
+</html>

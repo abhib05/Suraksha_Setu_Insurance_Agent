@@ -939,6 +939,65 @@
         }
       }
     },
+    "/claims/{claim_id}/packet.html": {
+      "get": {
+        "tags": [
+          "workflows"
+        ],
+        "summary": "Packet Html",
+        "description": "The packet as a reviewer sees it. Names are revealed from the vault (audited).",
+        "operationId": "packet_html_claims__claim_id__packet_html_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cases/{case_id}/chat": {
       "post": {
         "tags": [

@@ -42,6 +42,25 @@ the task is resolved. Agents are stubs (`agents/stubs.py`) until M3–M5. Human 
 come in through the API (`/cases/{id}/workflow/...`, `/claims/{id}/approve|return|...`,
 `/tasks/{id}/resolve`), which records each one in `approval` and the audit log.
 
+## Discovery, filing, verifier and coordinator (M5)
+
+- **Filing** (`agents/filing/`): one packet per claim. Every form value comes from a named
+  source (a document field, the family's statement, or the registry), names stay vault
+  tokens, attachments follow the registry's required documents, missing ones go on the
+  checklist. The model only rewrites the FIR's accident text in plain English (it keeps the
+  FIR as its source); without a model the FIR text is used.
+- **Verifier** (`agents/verifier/`): code decides pass/fail. Any untraced or empty required
+  field, a value that differs from its document, a date of death that disagrees anywhere, a
+  missing required attachment, a not-eligible rule result, a wrong amount or no nominee is a
+  blocker. Muse Wonder's review adds findings capped at warnings; if it cannot run the
+  verdict says so.
+- **Coordinator**: the next action (request approval vs escalate) is chosen in code; the
+  model writes the reviewer's summary (a summary that promises payment is discarded).
+- **Discovery**: matchers find covers; for weak premium evidence the model adds a note for
+  the reviewer, never an upgrade.
+- `GET /claims/{id}/packet.html`: the printable packet with sources and findings beside
+  each field (names revealed from the vault, audited).
+
 ## Conversation and document agents (M4)
 
 - **Intake page** (console): chat, an "I agree" consent button, photo upload with the

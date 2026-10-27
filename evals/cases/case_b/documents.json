@@ -18,6 +18,21 @@
         "name": "txn",
         "value": "2026-06-02|SALARY CREDIT|9500|CR",
         "confidence": 0.96
+      },
+      {
+        "name": "account_number_last4",
+        "value": "4417",
+        "confidence": 0.96
+      },
+      {
+        "name": "institution",
+        "value": "Kaveri Gramin Bank",
+        "confidence": 0.96
+      },
+      {
+        "name": "branch",
+        "value": "Hubballi",
+        "confidence": 0.96
       }
     ],
     "masked_copy_ref": "evals/cases/case_b/documents/d1.masked.png",
@@ -31,6 +46,21 @@
       {
         "name": "cause",
         "value": "fall from construction site scaffolding",
+        "confidence": 0.96
+      },
+      {
+        "name": "police_station",
+        "value": "Hubballi Traffic PS",
+        "confidence": 0.96
+      },
+      {
+        "name": "date_of_incident",
+        "value": "2026-08-03",
+        "confidence": 0.96
+      },
+      {
+        "name": "fir_number",
+        "value": "03/2026",
         "confidence": 0.96
       }
     ],
@@ -46,6 +76,16 @@
         "name": "cause",
         "value": "multiple injuries",
         "confidence": 0.96
+      },
+      {
+        "name": "hospital",
+        "value": "District Hospital (fictional)",
+        "confidence": 0.96
+      },
+      {
+        "name": "date_of_examination",
+        "value": "2026-08-03",
+        "confidence": 0.96
       }
     ],
     "masked_copy_ref": "evals/cases/case_b/documents/d4.masked.png",
@@ -59,6 +99,11 @@
       {
         "name": "aadhaar_masked",
         "value": "XXXX XXXX 1190",
+        "confidence": 0.96
+      },
+      {
+        "name": "date_of_birth",
+        "value": "1988-01-01",
         "confidence": 0.96
       }
     ],

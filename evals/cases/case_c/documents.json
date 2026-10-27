@@ -18,6 +18,21 @@
         "name": "txn",
         "value": "2026-08-05|PMJJBY NEW ENROLMENT|436|DR",
         "confidence": 0.96
+      },
+      {
+        "name": "account_number_last4",
+        "value": "4417",
+        "confidence": 0.96
+      },
+      {
+        "name": "institution",
+        "value": "Kaveri Gramin Bank",
+        "confidence": 0.96
+      },
+      {
+        "name": "branch",
+        "value": "Tumakuru",
+        "confidence": 0.96
       }
     ],
     "masked_copy_ref": "evals/cases/case_c/documents/d1.masked.png",
@@ -37,6 +52,16 @@
         "name": "cause",
         "value": "illness",
         "confidence": 0.96
+      },
+      {
+        "name": "place_of_death",
+        "value": "Tumakuru, Karnataka",
+        "confidence": 0.96
+      },
+      {
+        "name": "registration_number",
+        "value": "SMP/CASE_C/2026/02",
+        "confidence": 0.96
       }
     ],
     "masked_copy_ref": "evals/cases/case_c/documents/d2.masked.png",
@@ -50,6 +75,11 @@
       {
         "name": "aadhaar_masked",
         "value": "XXXX XXXX 7302",
+        "confidence": 0.96
+      },
+      {
+        "name": "date_of_birth",
+        "value": "1988-01-01",
         "confidence": 0.96
       }
     ],

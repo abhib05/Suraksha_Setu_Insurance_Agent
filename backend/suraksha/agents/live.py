@@ -12,6 +12,8 @@ from suraksha.services import intake as intake_svc
 
 
 class LiveAgents(StubAgents):
+    use_model = True
+
     def extract_documents(self, case_id: str) -> list[ExtractedDocument]:
         with session_scope() as s:
             q = select(m.Document).where(m.Document.case_id == case_id,

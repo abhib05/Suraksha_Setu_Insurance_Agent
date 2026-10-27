@@ -1,4 +1,4 @@
-"""M4 live check against the Meta Model API (needs MODEL_API_KEY in .env).
+"""M4 + M5 live check against the Meta Model API (needs MODEL_API_KEY in .env).
 
   uv run python scripts/eval_m4.py            # record mode: calls the API, saves responses
   uv run python scripts/eval_m4.py --replay   # re-run from saved responses, no spend
@@ -138,6 +138,32 @@ def step_conversation() -> None:
     check(any(c.relationship == "spouse" for c in facts.claimants), "spouse claimant")
 
 
+def step_packets() -> None:
+    print("5. Filing + verifier + coordinator with the models on (case A)")
+    from suraksha.agents.coordinator.agent import next_action
+    from suraksha.agents.filing.agent import build_packet
+    from suraksha.agents.verifier.agent import verify_packet
+    from suraksha.contracts import ExtractedDocument
+    from suraksha.services import rules
+    from suraksha.services.rules.facts import rule_facts
+    from suraksha.services.rules.matchers import match_entitlements
+
+    facts = CaseFacts.model_validate_json((CASES / "case_a" / "facts.json").read_text())
+    docs = [ExtractedDocument.model_validate(d)
+            for d in json.loads((CASES / "case_a" / "documents.json").read_text())]
+    rf = rule_facts(facts, docs)
+    for ent in match_entitlements(facts, docs):
+        result = rules.check_entitlement(ent, rf)
+        packet = build_packet(f"eval_{ent.scheme_id.value}", ent, facts, docs, 1)
+        verdict = verify_packet(packet, ent, facts, docs, result)
+        model_ran = not any("AI review did not run" in f.reason for f in verdict.findings)
+        check(verdict.passed, f"{ent.scheme_id.value} packet passes the verifier")
+        check(model_ran, f"{ent.scheme_id.value} Muse Wonder review ran")
+        for f in verdict.findings:
+            print(f"     {f.severity.value}: {f.reason}")
+        print("     summary:", next_action(packet, verdict, result).summary[:200])
+
+
 if __name__ == "__main__":
     if get_settings().llm_mode != "replay" and not get_settings().model_api_key:
         sys.exit("MODEL_API_KEY is empty in .env: add the key, or run with --replay.")
@@ -146,6 +172,7 @@ if __name__ == "__main__":
     step_documents()
     step_conversation()
     step_poisoned()
+    step_packets()
     print(f"\nSpend this run: ${total_spend() - before:.4f} (total ${total_spend():.4f})")
     print("FAILED:\n  " + "\n  ".join(failures) if failures else "ALL CHECKS PASSED")
     sys.exit(1 if failures else 0)

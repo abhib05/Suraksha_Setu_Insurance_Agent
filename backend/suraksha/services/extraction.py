@@ -6,9 +6,22 @@ from sqlalchemy.orm import Session
 
 from suraksha import audit
 from suraksha.agents.document.agent import read_document
+from suraksha.contracts import ExtractedDocument
 from suraksha.db import models as m
 from suraksha.db.base import new_id
-from suraksha.services import docstore
+from suraksha.services import docstore, vault
+
+# Document fields that hold a person's name: stored only as vault tokens.
+NAME_FIELDS = {"name", "account_holder"}
+
+
+def tokenise_names(session: Session, doc: ExtractedDocument) -> ExtractedDocument:
+    fields = [
+        f.model_copy(update={"value": vault.tokenize(session, vault.SecretKind.NAME, f.value)})
+        if f.name in NAME_FIELDS and f.value and not f.value.startswith("tok_") else f
+        for f in doc.fields
+    ]  # fmt: skip
+    return doc.model_copy(update={"fields": fields})
 
 
 def extract_and_store(session: Session, doc: m.Document) -> m.Document:
@@ -19,7 +32,7 @@ def extract_and_store(session: Session, doc: m.Document) -> m.Document:
         doc.case_id, doc.id, image, mime_type="image/png", original_sha256=doc.sha256,
         masked_ref=Path(doc.masked_path or "").name,
     )  # fmt: skip
-    extracted = result.document
+    extracted = tokenise_names(session, result.document)
     doc.doc_type = extracted.doc_type.value
     doc.extraction = extracted.model_dump(mode="json")
     session.flush()

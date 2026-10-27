@@ -92,7 +92,7 @@ class CaseWorkflow(StepRunner):
         ents: list[Entitlement] = await self.step(CaseActivities.discover, facts, docs)
         results = [await self.step(CaseActivities.check_eligibility, e, facts, docs, {})
                    for e in ents]  # fmt: skip
-        verdict = await self.step(CaseActivities.verify_entitlements, self.case_id, ents, results)
+        verdict = await self.step(CaseActivities.verify_entitlements, self.case_id, ents, docs)
         self.st.entitlements, self.st.rule_results = ents, results
 
         # Eligibility gate only for unsure results: weak evidence or a verifier concern.

@@ -153,7 +153,7 @@ def main() -> None:
                     [
                         ("Police station", f"{dec['place_of_death'].split(',')[0]} Traffic PS"),
                         ("Date of incident", dec["date_of_death"]),
-                        ("Description", fields["cause"][:38]),
+                        ("Description", fields["cause"]),
                         ("FIR no.", f"0{idx}/2026"),
                     ],
                 )

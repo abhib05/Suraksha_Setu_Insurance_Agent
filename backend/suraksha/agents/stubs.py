@@ -11,23 +11,23 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
+from suraksha.agents.coordinator import agent as coordinator
+from suraksha.agents.discovery import agent as discovery
+from suraksha.agents.filing import agent as filing
+from suraksha.agents.verifier import agent as verifier
 from suraksha.config import REPO_ROOT
 from suraksha.contracts import (
-    Attachment,
     CaseFacts,
-    ChecklistItem,
     ClaimPacket,
     DocType,
     Entitlement,
     ExtractedDocument,
-    FilledForm,
     Finding,
-    FormField,
+    NextAction,
     RuleResult,
     RuleStatus,
     SchemeId,
     Severity,
-    SourceRef,
     Strength,
     SubmissionReceipt,
     VerifierVerdict,
@@ -36,7 +36,6 @@ from suraksha.contracts.submission import Channel
 from suraksha.services import rules
 from suraksha.services.registry import expected_payout, required_documents
 from suraksha.services.rules.facts import rule_facts
-from suraksha.services.rules.matchers import match_entitlements
 
 CASES_DIR = REPO_ROOT / "evals" / "cases"
 
@@ -68,6 +67,8 @@ class Scenario:
 
 
 class StubAgents:
+    use_model = False  # fixtures and deterministic agents only; LiveAgents turns models on
+
     def __init__(self, scenario: Scenario | None = None):
         self.s = scenario or Scenario()
         self._calls: dict[str, int] = {}
@@ -90,12 +91,15 @@ class StubAgents:
         return [ExtractedDocument.model_validate(d)
                 for d in _fixture(self.s.fixture, "documents", case_id)]  # fmt: skip
 
-    # discovery agent: the deterministic matchers (M5 adds model reasoning on top)
-    def discover(self, facts: CaseFacts, docs: list[ExtractedDocument]) -> list[Entitlement]:
+    # discovery agent (M5): matchers + reviewer notes for weak evidence
+    def discover(
+        self, facts: CaseFacts, docs: list[ExtractedDocument]
+    ) -> tuple[list[Entitlement], dict[str, str]]:
         self._maybe_fail("discover")
-        ents = match_entitlements(facts, docs)
-        return [e.model_copy(update={"strength": Strength.POSSIBLE})
+        ents, notes = discovery.discover(facts, docs, use_model=self.use_model)
+        ents = [e.model_copy(update={"strength": Strength.POSSIBLE})
                 if e.scheme_id in self.s.weak_evidence else e for e in ents]  # fmt: skip
+        return ents, notes
 
     # rules engine (real, M3); a Scenario override replaces it for branch tests
     def check_eligibility(
@@ -120,17 +124,12 @@ class StubAgents:
             explanation_en=explain, missing_facts=missing if status is RuleStatus.UNKNOWN else [],
         )  # fmt: skip
 
-    # verifier agent
+    # verifier agent (M5)
     def verify_entitlements(
-        self, case_id: str, ents: list[Entitlement], results: list[RuleResult]
+        self, case_id: str, ents: list[Entitlement], docs: list[ExtractedDocument]
     ) -> VerifierVerdict:
         self._maybe_fail("verify_entitlements")
-        findings = [
-            Finding(severity=Severity.WARNING, target=f"entitlement:{e.entitlement_id}",
-                    reason="Only weak evidence for this cover; a reviewer should confirm.")
-            for e in ents if e.strength is Strength.POSSIBLE
-        ]  # fmt: skip
-        return VerifierVerdict(subject_id=f"{case_id}:discovery", passed=True, findings=findings)
+        return verifier.verify_entitlements(case_id, ents, docs)
 
     def brief(self, ents: list[Entitlement], results: list[RuleResult]) -> str:
         if not ents:
@@ -163,45 +162,38 @@ class StubAgents:
     def document_uploaded(self, claim_id: str) -> None:
         self._uploads[claim_id] = self._uploads.get(claim_id, 0) + 1
 
-    # filing agent
+    # filing agent (M5)
     def build_packet(
-        self, claim_id: str, ent: Entitlement, version: int, reviewer_comment: str | None
-    ) -> ClaimPacket:
+        self, claim_id: str, ent: Entitlement, facts: CaseFacts, docs: list[ExtractedDocument],
+        version: int, reviewer_comment: str | None,
+    ) -> ClaimPacket:  # fmt: skip
         self._maybe_fail("build_packet")
-        d = ent.case_id
-        src = lambda ref: SourceRef(kind="document_field", ref=ref)  # noqa: E731
-        return ClaimPacket(
-            claim_id=claim_id, scheme_id=ent.scheme_id, version=version,
-            forms=[FilledForm(template_id=f"{ent.scheme_id.value}-claim-form", fields=[
-                FormField(name="date_of_death", value="2026-09-14",
-                          source_ref=src(f"{d}-d2#date_of_death")),
-                FormField(name="nominee_name", value="tok_stub_spouse",
-                          source_ref=SourceRef(kind="family_statement", ref=f"{d}-c1")),
-            ])],
-            attachments=[Attachment(doc_id=f"{d}-d{i}", label=lbl, order=i)
-                         for i, lbl in enumerate(["Passbook", "Death certificate"], start=1)],
-            cover_letter="To the Branch Manager, Kaveri Gramin Bank ..."
-            + (f"\n(Revised: {reviewer_comment})" if reviewer_comment else ""),
-            checklist=[ChecklistItem(item="Claim form signed by nominee", done=False)],
-        )  # fmt: skip
+        return filing.build_packet(claim_id, ent, facts, docs, version, reviewer_comment,
+                                   use_model=self.use_model)  # fmt: skip
 
-    def verify_packet(self, packet: ClaimPacket) -> VerifierVerdict:
+    def verify_packet(
+        self, packet: ClaimPacket, ent: Entitlement, facts: CaseFacts,
+        docs: list[ExtractedDocument], rule_result: RuleResult,
+    ) -> VerifierVerdict:  # fmt: skip
         self._maybe_fail("verify_packet")
-        findings = [
-            Finding(severity=Severity.BLOCKER, target=t, reason="field has no source")
-            for t in packet.untraced_fields()
-        ]
+        verdict = verifier.verify_packet(packet, ent, facts, docs, rule_result,
+                                         use_model=self.use_model)  # fmt: skip
         if packet.version in self.s.verifier_fails_versions:
-            findings.append(
-                Finding(
-                    severity=Severity.BLOCKER,
-                    target="date_of_death",
-                    reason="Date on form differs from the death certificate.",
-                )
+            seeded = Finding(
+                severity=Severity.BLOCKER,
+                target="date_of_death",
+                reason="Date on form differs from the death certificate.",
             )
-        return VerifierVerdict(
-            subject_id=packet.idempotency_key, passed=not findings, findings=findings
-        )
+            verdict = verdict.model_copy(
+                update={"passed": False, "findings": [*verdict.findings, seeded]}
+            )
+        return verdict
+
+    # case coordinator (M5)
+    def next_action(
+        self, packet: ClaimPacket, verdict: VerifierVerdict, rule_result: RuleResult
+    ) -> NextAction:
+        return coordinator.next_action(packet, verdict, rule_result, use_model=self.use_model)
 
     # submission service (real adapter in M6)
     def submit(self, packet: ClaimPacket) -> SubmissionReceipt:

@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from temporalio.client import Client, WorkflowHandle
@@ -317,3 +318,42 @@ async def resolve_task(task_id: str, body: ResolveIn, session: DB) -> dict:
     wf = claim_wf_id(task.claim_id) if task.claim_id else case_wf_id(task.case_id)
     await (await temporal()).get_workflow_handle(wf).signal("resolve_task", task_id)
     return {"ok": True}
+
+
+@router.get("/claims/{claim_id}/packet.html", response_class=HTMLResponse)
+async def packet_html(claim_id: str, session: DB, version: int | None = None) -> HTMLResponse:
+    """The packet as a reviewer sees it. Names are revealed from the vault (audited)."""
+    from suraksha.agents.filing.render import render_packet
+    from suraksha.contracts import ClaimPacket, RuleResult, VerifierVerdict
+    from suraksha.services import vault
+
+    claim = _claim(session, claim_id)
+    q = select(m.Packet).where(m.Packet.claim_id == claim_id)
+    q = q.where(m.Packet.version == version) if version else q.order_by(m.Packet.version.desc())
+    row = session.scalars(q.limit(1)).first()
+    if row is None:
+        raise HTTPException(404, "no packet built yet")
+    ent = session.get(m.Entitlement, claim.entitlement_id)
+    summary = None
+    try:
+        state = await (await temporal()).get_workflow_handle(claim_wf_id(claim_id)).query("state")
+        if state.get("packet_version") == row.version:
+            summary = state.get("summary")
+    except (HTTPException, RPCError):
+        pass
+
+    def reveal(token: str) -> str:
+        try:
+            return vault.reveal(session, token, actor="user:reviewer", purpose="packet_review",
+                                case_id=claim.case_id)  # fmt: skip
+        except vault.VaultError:
+            return token
+
+    html = render_packet(
+        ClaimPacket.model_validate(row.body),
+        VerifierVerdict.model_validate(row.verdict) if row.verdict else None,
+        RuleResult.model_validate(ent.rule_result) if ent and ent.rule_result else None,
+        summary,
+        reveal,
+    )
+    return HTMLResponse(html)

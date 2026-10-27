@@ -12,6 +12,7 @@ from suraksha.contracts import (
     DocType,
     Entitlement,
     ExtractedDocument,
+    NextAction,
     RuleResult,
     SchemeId,
     SubmissionReceipt,
@@ -34,7 +35,7 @@ class CaseActivities:
             self.interview, self.extract_documents, self.discover, self.check_eligibility,
             self.verify_entitlements, self.brief_family, self.open_claim,
             self.missing_documents, self.note_document_uploaded, self.build_packet,
-            self.verify_packet, self.submit_packet, self.check_claim_status,
+            self.verify_packet, self.coordinate, self.submit_packet, self.check_claim_status,
             self.set_claim_status, self.create_task, self.record_event,
         ]  # fmt: skip
 
@@ -54,10 +55,11 @@ class CaseActivities:
 
     @activity.defn
     def discover(self, facts: CaseFacts, docs: list[ExtractedDocument]) -> list[Entitlement]:
-        ents = self.agents.discover(facts, docs)
+        ents, notes = self.agents.discover(facts, docs)
         self.store.save_entitlements(ents, [])
         self.store.record(facts.case_id, "agent:discovery", "discovery.completed", output=ents,
-                          detail={"schemes": [e.scheme_id.value for e in ents]})  # fmt: skip
+                          detail={"schemes": [e.scheme_id.value for e in ents],
+                                  "notes": notes})  # fmt: skip
         return ents
 
     @activity.defn
@@ -77,9 +79,9 @@ class CaseActivities:
 
     @activity.defn
     def verify_entitlements(
-        self, case_id: str, ents: list[Entitlement], results: list[RuleResult]
+        self, case_id: str, ents: list[Entitlement], docs: list[ExtractedDocument]
     ) -> VerifierVerdict:
-        verdict = self.agents.verify_entitlements(case_id, ents, results)
+        verdict = self.agents.verify_entitlements(case_id, ents, docs)
         self.store.record(
             case_id,
             "agent:verifier",
@@ -117,9 +119,10 @@ class CaseActivities:
 
     @activity.defn
     def build_packet(
-        self, claim_id: str, ent: Entitlement, version: int, reviewer_comment: str | None
-    ) -> ClaimPacket:
-        packet = self.agents.build_packet(claim_id, ent, version, reviewer_comment)
+        self, claim_id: str, ent: Entitlement, facts: CaseFacts, docs: list[ExtractedDocument],
+        version: int, reviewer_comment: str | None,
+    ) -> ClaimPacket:  # fmt: skip
+        packet = self.agents.build_packet(claim_id, ent, facts, docs, version, reviewer_comment)
         self.store.record(
             ent.case_id,
             "agent:filing",
@@ -130,13 +133,26 @@ class CaseActivities:
         return packet
 
     @activity.defn
-    def verify_packet(self, case_id: str, packet: ClaimPacket) -> VerifierVerdict:
-        verdict = self.agents.verify_packet(packet)
+    def verify_packet(
+        self, case_id: str, packet: ClaimPacket, ent: Entitlement, facts: CaseFacts,
+        docs: list[ExtractedDocument], rule_result: RuleResult,
+    ) -> VerifierVerdict:  # fmt: skip
+        verdict = self.agents.verify_packet(packet, ent, facts, docs, rule_result)
         self.store.save_packet(packet, verdict)
         self.store.record(case_id, "agent:verifier", "packet.verified", input=packet,
                           output=verdict, detail={"claim_id": packet.claim_id,
                           "version": packet.version, "passed": verdict.passed})  # fmt: skip
         return verdict
+
+    @activity.defn
+    def coordinate(
+        self, case_id: str, packet: ClaimPacket, verdict: VerifierVerdict, rule_result: RuleResult
+    ) -> NextAction:
+        action = self.agents.next_action(packet, verdict, rule_result)
+        self.store.record(case_id, "agent:coordinator", "claim.next_action", output=action,
+                          detail={"claim_id": packet.claim_id, "version": packet.version,
+                                  "action": action.action.value})  # fmt: skip
+        return action
 
     @activity.defn
     def submit_packet(self, case_id: str, packet: ClaimPacket) -> SubmissionReceipt:
