@@ -19,6 +19,8 @@ dependencies = [
     "pyyaml>=6.0",
     "httpx>=0.27",
     "python-multipart>=0.0.12",
+    "rapidocr-onnxruntime>=1.4.4",
+    "pillow>=13.0.0",
 ]
 
 [dependency-groups]
@@ -55,7 +57,8 @@ infra = { cmd = "docker compose up -d", help = "Start Postgres and Temporal only
 down = { cmd = "docker compose down", help = "Stop Postgres and Temporal" }
 api = { cmd = "uvicorn suraksha.api.main:app --reload --port 8000 --app-dir backend", help = "Run the API" }
 portal = { cmd = "uvicorn mock_portal.app:app --reload --port 8100", help = "Run the mock partner portal" }
-test = { cmd = "pytest", help = "Run backend tests" }
+migrate = { cmd = "alembic upgrade head", help = "Apply database migrations" }
+test = { cmd = "pytest", help = "Run backend tests (DB tests need `poe infra`)" }
 lint = { cmd = "ruff check .", help = "Lint" }
 fmt = { cmd = "ruff format .", help = "Format" }
 check-models = { cmd = "python scripts/check_models.py", help = "Validate models.yaml against the model policy" }

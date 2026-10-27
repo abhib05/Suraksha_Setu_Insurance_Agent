@@ -5,6 +5,264 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/cases": {
+      "post": {
+        "tags": [
+          "cases"
+        ],
+        "summary": "Open Case",
+        "operationId": "open_case_cases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/consent": {
+      "post": {
+        "tags": [
+          "cases"
+        ],
+        "summary": "Give Consent",
+        "operationId": "give_consent_cases__case_id__consent_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/consent/withdraw": {
+      "post": {
+        "tags": [
+          "cases"
+        ],
+        "summary": "Withdraw Consent",
+        "operationId": "withdraw_consent_cases__case_id__consent_withdraw_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Withdraw Consent Cases  Case Id  Consent Withdraw Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/documents": {
+      "post": {
+        "tags": [
+          "cases"
+        ],
+        "summary": "Upload Document",
+        "operationId": "upload_document_cases__case_id__documents_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_cases__case_id__documents_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/audit": {
+      "get": {
+        "tags": [
+          "cases"
+        ],
+        "summary": "Case Audit",
+        "operationId": "case_audit_cases__case_id__audit_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventOut"
+                  },
+                  "title": "Response Case Audit Cases  Case Id  Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit/verify": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "Verify Audit Chain",
+        "operationId": "verify_audit_chain_audit_verify_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -25,6 +283,336 @@
             }
           }
         }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditEventOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "rule_versions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Versions"
+          },
+          "input_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Hash"
+          },
+          "output_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Hash"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Detail"
+          },
+          "hash": {
+            "type": "string",
+            "title": "Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ts",
+          "actor",
+          "action",
+          "model",
+          "prompt_version",
+          "rule_versions",
+          "input_hash",
+          "output_hash",
+          "detail",
+          "hash"
+        ],
+        "title": "AuditEventOut"
+      },
+      "Body_upload_document_cases__case_id__documents_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_cases__case_id__documents_post"
+      },
+      "CaseIn": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "default": "web_chat"
+          }
+        },
+        "type": "object",
+        "title": "CaseIn"
+      },
+      "CaseOut": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "status"
+        ],
+        "title": "CaseOut"
+      },
+      "ChainOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "events": {
+            "type": "integer",
+            "title": "Events"
+          },
+          "first_bad_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Bad Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "events",
+          "first_bad_id"
+        ],
+        "title": "ChainOut"
+      },
+      "ConsentIn": {
+        "properties": {
+          "given_by_name": {
+            "type": "string",
+            "title": "Given By Name"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/ConsentPurpose",
+            "default": "prepare_claims"
+          },
+          "scope": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scope",
+            "default": [
+              "identity",
+              "bank",
+              "documents"
+            ]
+          },
+          "method": {
+            "$ref": "#/components/schemas/ConsentMethod",
+            "default": "chat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "given_by_name"
+        ],
+        "title": "ConsentIn"
+      },
+      "ConsentMethod": {
+        "type": "string",
+        "enum": [
+          "chat",
+          "voice",
+          "assisted",
+          "thumbprint"
+        ],
+        "title": "ConsentMethod"
+      },
+      "ConsentOut": {
+        "properties": {
+          "consent_id": {
+            "type": "string",
+            "title": "Consent Id"
+          },
+          "given_by": {
+            "type": "string",
+            "title": "Given By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consent_id",
+          "given_by"
+        ],
+        "title": "ConsentOut"
+      },
+      "ConsentPurpose": {
+        "type": "string",
+        "enum": [
+          "prepare_claims",
+          "share_with_partner"
+        ],
+        "title": "ConsentPurpose"
+      },
+      "DocumentOut": {
+        "properties": {
+          "doc_id": {
+            "type": "string",
+            "title": "Doc Id"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "masking_status": {
+            "type": "string",
+            "title": "Masking Status"
+          },
+          "aadhaar_masked": {
+            "type": "integer",
+            "title": "Aadhaar Masked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "doc_id",
+          "sha256",
+          "masking_status",
+          "aadhaar_masked"
+        ],
+        "title": "DocumentOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

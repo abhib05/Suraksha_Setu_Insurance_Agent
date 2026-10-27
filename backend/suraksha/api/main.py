@@ -4,8 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from suraksha import __version__
+from suraksha.api.cases import audit_router
+from suraksha.api.cases import router as cases_router
 
 app = FastAPI(title="Suraksha Setu API", version=__version__)
+app.include_router(cases_router)
+app.include_router(audit_router)
 
 app.add_middleware(
     CORSMiddleware,

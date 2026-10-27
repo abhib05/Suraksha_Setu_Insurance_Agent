@@ -10,6 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LLM_MODE: replay  # CI never spends Meta API credits
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: suraksha
+          POSTGRES_PASSWORD: suraksha
+          POSTGRES_DB: suraksha
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U suraksha" --health-interval 2s --health-retries 30
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

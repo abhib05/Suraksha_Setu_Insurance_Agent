@@ -4,6 +4,108 @@
  */
 
 export interface paths {
+    "/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open Case */
+        post: operations["open_case_cases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Give Consent */
+        post: operations["give_consent_cases__case_id__consent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/consent/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw Consent */
+        post: operations["withdraw_consent_cases__case_id__consent_withdraw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Document */
+        post: operations["upload_document_cases__case_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cases/{case_id}/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Case Audit */
+        get: operations["case_audit_cases__case_id__audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/audit/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verify Audit Chain */
+        get: operations["verify_audit_chain_audit_verify_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -24,7 +126,131 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /** AuditEventOut */
+        AuditEventOut: {
+            /** Id */
+            id: number;
+            /**
+             * Ts
+             * Format: date-time
+             */
+            ts: string;
+            /** Actor */
+            actor: string;
+            /** Action */
+            action: string;
+            /** Model */
+            model: string | null;
+            /** Prompt Version */
+            prompt_version: string | null;
+            /** Rule Versions */
+            rule_versions: string[] | null;
+            /** Input Hash */
+            input_hash: string | null;
+            /** Output Hash */
+            output_hash: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            };
+            /** Hash */
+            hash: string;
+        };
+        /** Body_upload_document_cases__case_id__documents_post */
+        Body_upload_document_cases__case_id__documents_post: {
+            /** File */
+            file: string;
+        };
+        /** CaseIn */
+        CaseIn: {
+            /**
+             * Channel
+             * @default web_chat
+             */
+            channel: string;
+        };
+        /** CaseOut */
+        CaseOut: {
+            /** Case Id */
+            case_id: string;
+            /** Status */
+            status: string;
+        };
+        /** ChainOut */
+        ChainOut: {
+            /** Ok */
+            ok: boolean;
+            /** Events */
+            events: number;
+            /** First Bad Id */
+            first_bad_id: number | null;
+        };
+        /** ConsentIn */
+        ConsentIn: {
+            /** Given By Name */
+            given_by_name: string;
+            /** @default prepare_claims */
+            purpose: components["schemas"]["ConsentPurpose"];
+            /**
+             * Scope
+             * @default [
+             *       "identity",
+             *       "bank",
+             *       "documents"
+             *     ]
+             */
+            scope: string[];
+            /** @default chat */
+            method: components["schemas"]["ConsentMethod"];
+        };
+        /**
+         * ConsentMethod
+         * @enum {string}
+         */
+        ConsentMethod: "chat" | "voice" | "assisted" | "thumbprint";
+        /** ConsentOut */
+        ConsentOut: {
+            /** Consent Id */
+            consent_id: string;
+            /** Given By */
+            given_by: string;
+        };
+        /**
+         * ConsentPurpose
+         * @enum {string}
+         */
+        ConsentPurpose: "prepare_claims" | "share_with_partner";
+        /** DocumentOut */
+        DocumentOut: {
+            /** Doc Id */
+            doc_id: string;
+            /** Sha256 */
+            sha256: string;
+            /** Masking Status */
+            masking_status: string;
+            /** Aadhaar Masked */
+            aadhaar_masked: number;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -33,6 +259,193 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    open_case_cases_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    give_consent_cases__case_id__consent_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_consent_cases__case_id__consent_withdraw_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_document_cases__case_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_cases__case_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    case_audit_cases__case_id__audit_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_audit_chain_audit_verify_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChainOut"];
+                };
+            };
+        };
+    };
     health_health_get: {
         parameters: {
             query?: never;

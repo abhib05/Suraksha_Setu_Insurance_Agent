@@ -25,6 +25,15 @@ models:
     approved: true
     modalities: [audio]
     price_usd_per_audio_hour: 0.18
+  rapidocr-onnxruntime:
+    provider: rapidocr (open source, PaddleOCR models)
+    approved: true
+    runs: local  # CPU, inside the docstore; nothing leaves the machine
+    reason: >-
+      Finds Aadhaar numbers on document photos so they are masked before any image reaches
+      the Meta API (privacy NFR, undocumented India data residency). Meta's API cannot do
+      this without first receiving the unmasked image.
+    price_usd_per_1m: null
 
 # Which model each agent uses. Only the verifier runs on Muse Wonder (MOD-08: spend).
 agents:

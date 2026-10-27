@@ -24,8 +24,19 @@ uv run poe dev                # Postgres + Temporal (Docker), API, mock portal, 
 | Review console | http://localhost:5173 |
 | Temporal UI | http://localhost:8233 |
 
-Other tasks: `uv run poe test`, `poe lint`, `poe check-models`, `poe openapi`, `poe down`.
-`uv run poe` lists them all.
+`poe dev` applies database migrations on start. Other tasks: `uv run poe test` (database
+tests need `poe infra` running), `poe migrate`, `poe lint`, `poe check-models`, `poe openapi`,
+`poe down`. `uv run poe` lists them all.
+
+## Privacy plumbing (M1)
+
+- Names, phones, account and Aadhaar numbers are Fernet-encrypted in the `vault` schema;
+  every other table and every agent sees only `tok_...` tokens. Reveals are audited.
+- No data write happens on a case without active consent (`403` otherwise).
+- Uploaded originals are encrypted on disk. A local OCR masks Aadhaar numbers (all but the
+  last 4 digits) on a working copy, and only that copy may reach the Meta API.
+- `audit_event` is append-only (a database trigger blocks UPDATE/DELETE/TRUNCATE) and
+  hash-chained; `GET /audit/verify` recomputes the chain.
 
 ## Layout
 
