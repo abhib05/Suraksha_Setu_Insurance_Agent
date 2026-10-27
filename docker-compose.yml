@@ -1,0 +1,32 @@
+name: suraksha-setu
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: suraksha
+      POSTGRES_PASSWORD: suraksha
+      POSTGRES_DB: suraksha
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suraksha -d suraksha"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Temporal dev server (same as `temporal server start-dev`), with its own SQLite file.
+  temporal:
+    image: temporalio/temporal:latest
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--ui-ip", "0.0.0.0", "--db-filename", "/data/temporal.db"]
+    ports:
+      - "7233:7233"   # gRPC
+      - "8233:8233"   # Web UI
+    volumes:
+      - temporaldata:/data
+
+volumes:
+  pgdata:
+  temporaldata:

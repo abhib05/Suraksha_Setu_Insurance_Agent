@@ -1,0 +1,63 @@
+[project]
+name = "suraksha-setu"
+version = "0.1.0"
+description = "Multi-agent claims assistant that helps Indian families claim the insurance a death triggers."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "temporalio>=1.8",
+    "openai>=1.55",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0",
+    "alembic>=1.14",
+    "psycopg[binary]>=3.2",
+    "cryptography>=43",
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    "python-multipart>=0.0.12",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+    "poethepoet>=0.31",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/suraksha", "mock_portal"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend", "."]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["backend", "."]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.poe.tasks]
+dev = { cmd = "python scripts/dev.py", help = "Start Postgres, Temporal, API, mock portal and console" }
+infra = { cmd = "docker compose up -d", help = "Start Postgres and Temporal only" }
+down = { cmd = "docker compose down", help = "Stop Postgres and Temporal" }
+api = { cmd = "uvicorn suraksha.api.main:app --reload --port 8000 --app-dir backend", help = "Run the API" }
+portal = { cmd = "uvicorn mock_portal.app:app --reload --port 8100", help = "Run the mock partner portal" }
+test = { cmd = "pytest", help = "Run backend tests" }
+lint = { cmd = "ruff check .", help = "Lint" }
+fmt = { cmd = "ruff format .", help = "Format" }
+check-models = { cmd = "python scripts/check_models.py", help = "Validate models.yaml against the model policy" }
+openapi = { cmd = "python scripts/export_openapi.py", help = "Write console/openapi.json from the API" }
+ci = { sequence = ["lint", "check-models", "test"], help = "Everything CI runs for the backend" }

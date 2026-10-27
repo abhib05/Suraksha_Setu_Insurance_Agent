@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+console/dist/
+
+# Secrets and local data
+.env
+data/
+*.sqlite
+
+# Recorded model calls with live (non-synthetic) data never go in git
+evals/recordings/live/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

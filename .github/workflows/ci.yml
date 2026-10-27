@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      LLM_MODE: replay  # CI never spends Meta API credits
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run python scripts/check_models.py
+      - run: uv run pytest -q
+
+  console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+      - run: uv sync --locked
+      # The console client must match the API: regenerate and fail on drift.
+      - run: uv run python scripts/export_openapi.py
+      - run: npm ci --prefix console
+      - run: npm run gen:api --prefix console
+      - run: git diff --exit-code console/openapi.json console/src/api/schema.d.ts
+      - run: npm run typecheck --prefix console
+      - run: npm run lint --prefix console
