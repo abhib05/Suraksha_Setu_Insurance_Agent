@@ -1090,6 +1090,59 @@
         }
       }
     },
+    "/cases/{case_id}/voice": {
+      "post": {
+        "tags": [
+          "intake"
+        ],
+        "summary": "Voice To Text",
+        "description": "Muse Voice Transcribe turns a spoken answer into text for the chat box. The family\nreads it (and can fix it) before sending; the audio itself is never stored.",
+        "operationId": "voice_to_text_cases__case_id__voice_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_voice_to_text_cases__case_id__voice_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cases/{case_id}/intake/finish": {
       "post": {
         "tags": [
@@ -1492,6 +1545,31 @@
           "file"
         ],
         "title": "Body_upload_document_cases__case_id__documents_post"
+      },
+      "Body_voice_to_text_cases__case_id__voice_post": {
+        "properties": {
+          "audio": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio"
+        ],
+        "title": "Body_voice_to_text_cases__case_id__voice_post"
       },
       "CaseIn": {
         "properties": {
@@ -2476,6 +2554,24 @@
           "warnings"
         ],
         "title": "VerdictCounts"
+      },
+      "VoiceOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "audio_ms": {
+            "type": "integer",
+            "title": "Audio Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "audio_ms"
+        ],
+        "title": "VoiceOut"
       }
     }
   }

@@ -1,0 +1,9 @@
+{
+  "agent": "conversation",
+  "model": "muse-spark-1.3",
+  "text": "{\"intake_complete\": false, \"reply\": \"Thank you, Sunita ji. I have noted it was a Jan Dhan RuPay card. Do you remember when he last used this card at an ATM or shop? An approximate date is fine.\", \"updates\": {\"age_at_death\": null, \"bank_name\": null, \"card_issue_date\": null, \"card_kind\": \"rupay_pmjdy\", \"card_last_used\": null, \"date_of_death\": null, \"deceased_name\": null, \"event_description\": null, \"event_type\": null, \"has_debit_card\": true, \"nominee_name\": null, \"nominee_relationship\": null, \"place_of_death\": null, \"speaker_name\": null, \"speaker_relationship\": null}, \"wants_human\": false}",
+  "input_tokens": 2224,
+  "output_tokens": 619,
+  "cost_usd": 0.00373765,
+  "replayed": false
+}

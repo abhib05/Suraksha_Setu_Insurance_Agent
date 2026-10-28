@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, BASE, type Schemas } from '../api/client'
 import { RuleChips } from '../rules'
+import { startRecording, type Recorder } from '../voice'
 
 type Msg = { role: string; content: string }
 type Doc = Schemas['DocumentView']
@@ -67,6 +68,8 @@ export default function Intake() {
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
   const [reading, setReading] = useState(0)
+  const [recorder, setRecorder] = useState<Recorder | null>(null)
+  const [voiceLang, setVoiceLang] = useState('auto')
   const [error, setError] = useState<string | null>(null)
   const [chosen, setChosen] = useState<string[] | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
@@ -174,6 +177,31 @@ export default function Intake() {
     if (failed.length) setError(`Could not read ${failed.join(', ')}`)
   }
 
+  // Push to talk: first press records, second press stops and puts the words in the box,
+  // where the family can read and fix them before sending.
+  async function voice() {
+    if (!caseId) return
+    if (!recorder) {
+      setError(null)
+      try {
+        setRecorder(await startRecording())
+      } catch {
+        setError('Could not use the microphone. Please allow it, or type instead.')
+      }
+      return
+    }
+    const r = recorder
+    setRecorder(null)
+    await run('Listening', async () => {
+      const form = new FormData()
+      form.append('audio', await r.stop(), 'voice.wav')
+      if (voiceLang !== 'auto') form.append('language', voiceLang)
+      const out = await api<Schemas['VoiceOut']>('POST', `/cases/${caseId}/voice`, form)
+      if (!out.text) throw new Error('I could not hear any words. Please try again, or type.')
+      setDraft((d) => (d.trim() ? `${d.trim()} ${out.text}` : out.text))
+    })
+  }
+
   async function finish() {
     if (!caseId) return
     await run('Finishing', () => api('POST', `/cases/${caseId}/intake/finish`))
@@ -268,6 +296,21 @@ export default function Intake() {
               placeholder="Type your answer"
               disabled={!!busy || finished}
             />
+            {consent && !finished && (
+              <>
+                <select value={voiceLang} onChange={(e) => setVoiceLang(e.target.value)}
+                  title="Language you will speak" disabled={!!recorder}>
+                  <option value="auto">Auto</option>
+                  <option value="hindi">हिन्दी</option>
+                  <option value="kannada">ಕನ್ನಡ</option>
+                  <option value="english">English</option>
+                </select>
+                <button type="button" className={recorder ? 'recording' : ''} onClick={voice}
+                  disabled={!!busy} title={recorder ? 'Stop and turn into text' : 'Speak your answer'}>
+                  {recorder ? '■ Stop' : busy === 'Listening' ? '…' : '🎤 Speak'}
+                </button>
+              </>
+            )}
             <button type="submit" disabled={!!busy || !draft.trim() || finished}>
               Send
             </button>

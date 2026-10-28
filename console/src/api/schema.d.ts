@@ -333,6 +333,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cases/{case_id}/voice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Voice To Text
+         * @description Muse Voice Transcribe turns a spoken answer into text for the chat box. The family
+         *     reads it (and can fix it) before sending; the audio itself is never stored.
+         */
+        post: operations["voice_to_text_cases__case_id__voice_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cases/{case_id}/intake/finish": {
         parameters: {
             query?: never;
@@ -496,6 +517,13 @@ export interface components {
         Body_upload_document_cases__case_id__documents_post: {
             /** File */
             file: string;
+        };
+        /** Body_voice_to_text_cases__case_id__voice_post */
+        Body_voice_to_text_cases__case_id__voice_post: {
+            /** Audio */
+            audio: string;
+            /** Language */
+            language?: string | null;
         };
         /** CaseIn */
         CaseIn: {
@@ -851,6 +879,13 @@ export interface components {
             blockers: number;
             /** Warnings */
             warnings: number;
+        };
+        /** VoiceOut */
+        VoiceOut: {
+            /** Text */
+            text: string;
+            /** Audio Ms */
+            audio_ms: number;
         };
     };
     responses: never;
@@ -1592,6 +1627,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    voice_to_text_cases__case_id__voice_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_voice_to_text_cases__case_id__voice_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceOut"];
                 };
             };
             /** @description Validation Error */

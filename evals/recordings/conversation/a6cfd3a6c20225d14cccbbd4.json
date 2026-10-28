@@ -1,0 +1,9 @@
+{
+  "agent": "conversation",
+  "model": "muse-spark-1.3",
+  "text": "{\"intake_complete\": false, \"reply\": \"I am so sorry to hear that, Sunita ji. Thank you for telling me. Where did this accident happen \\u2014 which town, district and state?\", \"updates\": {\"age_at_death\": null, \"bank_name\": null, \"card_issue_date\": null, \"card_kind\": null, \"card_last_used\": null, \"date_of_death\": null, \"deceased_name\": null, \"event_description\": \"Truck hit his two-wheeler on the highway.\", \"event_type\": \"accident\", \"has_debit_card\": null, \"nominee_name\": null, \"nominee_relationship\": null, \"place_of_death\": null, \"speaker_name\": null, \"speaker_relationship\": null}, \"wants_human\": false}",
+  "input_tokens": 1877,
+  "output_tokens": 651,
+  "cost_usd": 0.0034399,
+  "replayed": false
+}

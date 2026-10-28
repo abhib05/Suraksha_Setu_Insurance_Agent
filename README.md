@@ -38,6 +38,17 @@ demo-case c` runs eval case C through the running app so it is ready to show.
 `uv run poe eval` scores every eval case against its `expected.json` (see
 [evals/README.md](evals/README.md)).
 
+## Voice input (M7 stretch)
+
+The chat's **Speak** button records an answer in Hindi, Kannada or English (or lets the model
+detect the language). The browser converts the clip to 16 kHz mono WAV, `POST
+/cases/{id}/voice` sends it to Muse Voice Transcribe (`POST /v1/asr/transcribe`, with a
+`languageBias`), and the text lands in the chat box for the family to read and fix before
+sending. It needs consent, takes up to 2 minutes, and never stores the audio. The audit log
+keeps only hashes. `tools/llm.transcribe` follows the same replay/record and spend rules as the
+chat models (about $0.18 per audio hour). Keyword biasing was tried and dropped: it added
+repeated words.
+
 ## Workflows (M2)
 
 `case_workflow` (one per death): consent → interview → documents → discovery → eligibility →

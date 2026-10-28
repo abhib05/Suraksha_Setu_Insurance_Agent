@@ -89,6 +89,15 @@ _RELATIONSHIP = {
     "son": Relationship.CHILD, "daughter": Relationship.CHILD, "child": Relationship.CHILD,
     "father": Relationship.PARENT, "mother": Relationship.PARENT, "parent": Relationship.PARENT,
     "brother": Relationship.SIBLING, "sister": Relationship.SIBLING,
+    # Hindi and Kannada, in case a value comes back in the family's script (prompt asks
+    # for English; seen live before that rule).
+    "पत्नी": Relationship.SPOUSE, "पति": Relationship.SPOUSE, "बेटा": Relationship.CHILD,
+    "बेटी": Relationship.CHILD, "पिता": Relationship.PARENT, "माता": Relationship.PARENT,
+    "माँ": Relationship.PARENT, "भाई": Relationship.SIBLING, "बहन": Relationship.SIBLING,
+    "ಪತ್ನಿ": Relationship.SPOUSE, "ಹೆಂಡತಿ": Relationship.SPOUSE, "ಪತಿ": Relationship.SPOUSE,
+    "ಗಂಡ": Relationship.SPOUSE, "ಮಗ": Relationship.CHILD, "ಮಗಳು": Relationship.CHILD,
+    "ತಂದೆ": Relationship.PARENT, "ತಾಯಿ": Relationship.PARENT, "ಅಣ್ಣ": Relationship.SIBLING,
+    "ತಮ್ಮ": Relationship.SIBLING, "ಅಕ್ಕ": Relationship.SIBLING, "ತಂಗಿ": Relationship.SIBLING,
 }  # fmt: skip
 
 

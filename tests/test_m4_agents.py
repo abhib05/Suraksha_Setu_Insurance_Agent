@@ -69,7 +69,7 @@ def reading_from_fixture(doc: dict) -> DocumentReading:
 def test_no_updates_kept_before_consent():
     fake = FakeModel(conversation=[turn("Sorry for your loss.", deceased_name="X", complete=True)])
     t, version = take_turn([], "hi", known={}, consent_given=False, complete_json=fake)
-    assert t.updates == IntakeUpdates() and not t.intake_complete and version == "1"
+    assert t.updates == IntakeUpdates() and not t.intake_complete and version == "2"
     assert "NOT YET GIVEN" in fake.calls[0][1][1]["content"]
 
 

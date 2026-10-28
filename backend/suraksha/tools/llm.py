@@ -247,3 +247,64 @@ def _log_spend(settings: Settings, key: str, result: LLMResult) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
+
+
+# --- speech to text (Muse Voice Transcribe) ------------------------------------------
+
+# No `keywords` biasing: tried live with scheme and bank names, it added repeated or
+# invented words ("Ramesh Ramesh", "Mysuru on Mysore") and cut Hindi short.
+
+
+class Transcript(BaseModel):
+    text: str
+    audio_ms: int
+    model: str
+    cost_usd: float | None = None
+    replayed: bool = False
+
+
+def transcribe(
+    wav: bytes, *, languages: list[str] | None = None, settings: Settings | None = None
+) -> Transcript:
+    """One recorded clip (mono 16/24 kHz WAV) to text. `languages` biases recognition, e.g.
+    ["Hindi"]; None lets the model detect it. Same replay/record and spend rules as
+    `complete()`; the recording keys on the audio's hash, never stores the audio."""
+    settings = settings or get_settings()
+    model = routes(settings.models_file)["transcribe"].model
+    request: dict[str, Any] = {"model": model, "audioEncoding": "WAV", "mode": "PUSH_TO_TALK"}
+    if languages:
+        request["languageBias"] = languages
+    key = _request_key({**request, "audio_sha256": hashlib.sha256(wav).hexdigest()})
+    recording = settings.llm_recordings_dir / "transcribe" / f"{key}.json"
+
+    if settings.llm_mode == "replay" or (settings.llm_mode == "record" and recording.exists()):
+        if not recording.exists():
+            raise ReplayMissError(f"no recording for transcribe request {key}")
+        data = json.loads(recording.read_text(encoding="utf-8"))
+        return Transcript(**{**data, "replayed": True, "cost_usd": 0.0})
+
+    if total_spend(settings) >= settings.llm_spend_limit_usd:
+        raise SpendLimitError(f"spend limit ${settings.llm_spend_limit_usd} reached")
+
+    import httpx
+
+    r = httpx.post(
+        f"{settings.model_base_url}/asr/transcribe",
+        headers={"Authorization": f"Bearer {settings.model_api_key}",
+                 "Accept": "application/json"},
+        files={"request": (None, json.dumps(request), "application/json"),
+               "audio": ("clip.wav", wav, "audio/wav")},
+        timeout=60,
+    )  # fmt: skip
+    r.raise_for_status()
+    body = r.json()
+    price = load_registry(settings.models_file)["models"][model].get("price_usd_per_audio_hour")
+    audio_ms = int(body.get("audioDurationMs") or 0)
+    result = Transcript(text=(body.get("transcript") or "").strip(), audio_ms=audio_ms,
+                        model=model, cost_usd=price * audio_ms / 3_600_000 if price else None)
+    _log_spend(settings, key, LLMResult(agent="transcribe", model=model, text="",
+                                        cost_usd=result.cost_usd))  # fmt: skip
+    if settings.llm_mode == "record":
+        recording.parent.mkdir(parents=True, exist_ok=True)
+        recording.write_text(result.model_dump_json(indent=2), encoding="utf-8")
+    return result

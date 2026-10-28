@@ -1,11 +1,14 @@
 """Family-facing intake (M4): chat with the conversation agent, see extracted documents,
 and finish the interview so the case workflow can continue."""
 
+import io
 import logging
+import wave
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+import httpx
+from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from openai import OpenAIError
 from pydantic import BaseModel
@@ -20,7 +23,7 @@ from suraksha.db import models as m
 from suraksha.db.base import new_id
 from suraksha.services import consent, docstore
 from suraksha.services import intake as intake_svc
-from suraksha.tools.llm import AgentOutputError, ReplayMissError, SpendLimitError
+from suraksha.tools.llm import AgentOutputError, ReplayMissError, SpendLimitError, transcribe
 
 log = logging.getLogger("suraksha.intake")
 router = APIRouter(tags=["intake"])
@@ -146,6 +149,53 @@ def chat_history(case_id: str, session: DB) -> ChatHistoryOut:
         intake_complete=row.complete, finished=row.finished,
         known=intake_svc.known_for_prompt(row.draft),
     )  # fmt: skip
+
+
+# --- voice (push to talk) --------------------------------------------------------------
+
+VOICE_LANGUAGES = {"hindi": "Hindi", "kannada": "Kannada", "english": "English"}
+MAX_VOICE_SECONDS = 120
+
+
+class VoiceOut(BaseModel):
+    text: str
+    audio_ms: int
+
+
+def _check_wav(data: bytes) -> None:
+    try:
+        with wave.open(io.BytesIO(data)) as w:
+            ok = (w.getnchannels() == 1 and w.getsampwidth() == 2
+                  and w.getframerate() in (16000, 24000))  # fmt: skip
+            seconds = w.getnframes() / w.getframerate()
+    except (wave.Error, EOFError) as e:
+        raise HTTPException(422, "send a WAV recording") from e
+    if not ok:
+        raise HTTPException(422, "audio must be mono 16-bit PCM at 16 or 24 kHz")
+    if seconds > MAX_VOICE_SECONDS:
+        raise HTTPException(422, f"keep a voice message under {MAX_VOICE_SECONDS} seconds")
+
+
+@router.post("/cases/{case_id}/voice", response_model=VoiceOut)
+def voice_to_text(case_id: str, session: DB, audio: UploadFile,
+                  language: str | None = Form(None)) -> VoiceOut:  # fmt: skip
+    """Muse Voice Transcribe turns a spoken answer into text for the chat box. The family
+    reads it (and can fix it) before sending; the audio itself is never stored."""
+    _case(session, case_id)
+    if not consent.is_active(session, case_id, ConsentPurpose.PREPARE_CLAIMS):
+        raise HTTPException(403, "consent needed before voice messages")
+    data = audio.file.read()
+    _check_wav(data)
+    lang = VOICE_LANGUAGES.get((language or "").lower())
+    try:
+        out = transcribe(data, languages=[lang] if lang else None)
+    except (ReplayMissError, SpendLimitError, httpx.HTTPError) as e:
+        log.warning("transcription failed: %s", e)
+        raise HTTPException(503, "Voice is not available right now; please type instead.") from e
+    audit.append(session, actor="agent:transcribe", action="voice.transcribed",
+                 case_id=case_id, model=out.model, input=data, output=out.text,
+                 detail={"audio_ms": out.audio_ms, "language": lang or "auto"})  # fmt: skip
+    return VoiceOut(text=out.text, audio_ms=out.audio_ms)
 
 
 @router.post("/cases/{case_id}/intake/finish")

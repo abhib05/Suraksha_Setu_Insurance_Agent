@@ -60,6 +60,11 @@ Console tab, press **Start**.
   3. `He used it at the ATM a few days before the accident.`
   4. `Yes, all correct.`
 
+Optional, if the room is quiet: before line 3, pick **हिन्दी** and press **🎤 Speak**, say
+*"Unhone durghatna se chaar din pehle ATM se paise nikaale the"*, press **■ Stop**, and
+send the text that appears (Muse Voice Transcribe; the family can fix it first). The reply
+comes back in Hindi. Rehearse this once on the real mic first; it adds about 15 seconds.
+
 > "The conversation agent is Muse Spark. It never sees a name, only vault tokens, and it
 > reads back what it understood before anything happens."
 

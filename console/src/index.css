@@ -134,3 +134,12 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
 .ok { color: var(--accent); font-weight: 600; }
 .actor-agent { border-color: var(--accent); }
 .actor-user { background: var(--user); }
+
+.composer select {
+  font: inherit; padding: 6px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+}
+button.recording { border-color: #e5484d; color: #e5484d; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+.composer button { white-space: nowrap; }
+.composer input { min-width: 0; }

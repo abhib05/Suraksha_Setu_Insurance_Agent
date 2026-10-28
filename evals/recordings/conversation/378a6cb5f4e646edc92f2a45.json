@@ -1,0 +1,9 @@
+{
+  "agent": "conversation",
+  "model": "muse-spark-1.3",
+  "text": "{\"intake_complete\": false, \"reply\": \"I am very sorry for your loss. This help is free, nobody from Suraksha Setu will ever ask you for money, OTP or PIN, and you can stop at any time. With your permission, I will use your information only to find possible insurance covers and prepare claims for a human to review, and share only with the bank or insurer when you approve. Please press the \\\"I agree\\\" button if you agree to continue.\", \"updates\": {\"age_at_death\": null, \"bank_name\": null, \"card_issue_date\": null, \"card_kind\": null, \"card_last_used\": null, \"date_of_death\": null, \"deceased_name\": null, \"event_description\": null, \"event_type\": null, \"has_debit_card\": null, \"nominee_name\": null, \"nominee_relationship\": null, \"place_of_death\": null, \"speaker_name\": null, \"speaker_relationship\": null}, \"wants_human\": false}",
+  "input_tokens": 1576,
+  "output_tokens": 809,
+  "cost_usd": 0.00486155,
+  "replayed": false
+}
