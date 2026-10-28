@@ -61,6 +61,17 @@ def _task(session, case_id: str, kind: str, detail: str, assignee: str = "review
     return t.id
 
 
+def _known(session, case_id: str, draft: dict) -> dict:
+    """The draft as the agent may see it, plus the documents already uploaded (so it does not
+    ask for them again)."""
+    known = intake_svc.known_for_prompt(draft)
+    held = session.scalars(select(m.Document.doc_type).where(
+        m.Document.case_id == case_id, m.Document.doc_type.is_not(None))).all()  # fmt: skip
+    if held:
+        known["documents_received"] = sorted(set(held))
+    return known
+
+
 @router.post("/cases/{case_id}/chat", response_model=ChatOut)
 def chat(case_id: str, body: ChatIn, session: DB) -> ChatOut:
     _case(session, case_id)
@@ -83,7 +94,7 @@ def chat(case_id: str, body: ChatIn, session: DB) -> ChatOut:
         elif screening.injection:
             flagged, reply = "injection", INJECTION_REPLY
         else:
-            turn, version = take_turn(prior, text, known=intake_svc.known_for_prompt(row.draft),
+            turn, version = take_turn(prior, text, known=_known(session, case_id, row.draft),
                                       consent_given=given)  # fmt: skip
             reply = turn.reply
             changed = intake_svc.merge(session, row, turn.updates)

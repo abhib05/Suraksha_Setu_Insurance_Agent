@@ -311,3 +311,20 @@ def test_names_read_from_documents_are_vaulted(docstore_dir, monkeypatch):
     ext = r.json()["extraction"]
     values = {f["name"]: f["value"] for f in ext["fields"]}
     assert values["name"].startswith("tok_") and values["date_of_death"] == "2026-09-14"
+
+
+@pytest.mark.usefixtures("migrated_db")
+def test_speaker_who_is_the_nominee_becomes_the_nominee(docstore_dir):
+    from suraksha.db import models as m
+    from suraksha.services import intake as intake_svc
+
+    client = TestClient(app)
+    case_id = client.post("/cases", json={}).json()["case_id"]
+    client.post(f"/cases/{case_id}/consent", json={"given_by_name": "Sunita Sample"})
+    with session_scope() as s:
+        row = s.get(m.Intake, case_id)
+        intake_svc.merge(s, row, IntakeUpdates(speaker_relationship="wife",
+                                               nominee_relationship="wife"))  # fmt: skip
+        assert row.draft["nominee_name_token"] == row.draft["speaker_name_token"]
+        facts = intake_svc.to_case_facts(case_id, row.draft)
+        assert facts.claimants[0].is_nominee is True

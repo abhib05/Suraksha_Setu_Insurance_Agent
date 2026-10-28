@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Death certificate is listed as missing and is not attached, so the bank cannot verify the death from an official record.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The claim form is not yet signed or thumb-printed by the nominee as shown on the checklist, so the bank cannot accept it as submitted.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"No cancelled cheque or passbook copy for the nominee's account is attached as shown on the checklist, so the bank cannot verify the account for payment.\", \"severity\": \"warning\", \"target\": \"pmsby-claim-form.nominee_account\"}, {\"reason\": \"The FIR is recorded at Hubballi Traffic PS although the reported accident is a fall from construction site scaffolding, so the bank may query whether the FIR was filed with the correct police station.\", \"severity\": \"warning\", \"target\": \"pmsby-claim-form.police_station\"}]}",
+  "input_tokens": 2145,
+  "output_tokens": 2854,
+  "cost_usd": 0.06566,
+  "replayed": false
+}

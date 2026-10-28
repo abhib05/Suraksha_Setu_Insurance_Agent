@@ -79,9 +79,11 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
 .consent {
   display: flex; gap: 12px; align-items: center; padding: 10px; margin: 8px 0;
   border: 1px dashed var(--accent); border-radius: 10px; font-size: 0.9rem;
+  flex-wrap: wrap;
 }
+.consent span { flex: 1 1 100%; }
 .composer { display: flex; gap: 8px; margin-top: 8px; }
-.composer input {
+.consent input, .composer input {
   flex: 1; font: inherit; padding: 8px 10px; border-radius: 8px;
   border: 1px solid var(--line); background: var(--bg); color: var(--fg);
 }

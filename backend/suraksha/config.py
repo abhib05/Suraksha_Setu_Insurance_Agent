@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     portal_base_url: str = "http://localhost:8100"
     # stub: fixture-driven agents; demo: fixtures but real filing with the mock portal
     agents: Literal["live", "demo", "stub"] = "live"
+    # How often a filed claim asks the claim desk for its status (the demo uses a few seconds).
+    claim_status_poll_seconds: int = 30
 
     models_file: Path = REPO_ROOT / "models.yaml"
 

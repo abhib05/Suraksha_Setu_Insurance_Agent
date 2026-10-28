@@ -13,6 +13,7 @@ from temporalio.service import RPCError
 
 from suraksha import audit
 from suraksha.api.cases import DB, _case
+from suraksha.config import get_settings
 from suraksha.contracts import Approval, Decision, Gate
 from suraksha.db import models as m
 from suraksha.db.base import new_id
@@ -72,7 +73,9 @@ async def signal_intake_if_running(case_id: str) -> None:
 
 
 class StartIn(BaseModel):
-    status_poll_seconds: int = Field(default=30, ge=1)
+    status_poll_seconds: int = Field(
+        default_factory=lambda: get_settings().claim_status_poll_seconds, ge=1
+    )
     wait_for_intake: bool = True  # the family is interviewed in chat
 
 

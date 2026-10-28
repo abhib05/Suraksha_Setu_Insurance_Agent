@@ -1,10 +1,13 @@
 """Identity vault: personal identifiers are Fernet-encrypted in the `vault` schema and the
 rest of the system only ever sees `tok_...` tokens. Every reveal is audited."""
 
-import secrets
+import base64
+import hashlib
+import hmac
 from enum import StrEnum
 
 from cryptography.fernet import Fernet, InvalidToken
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from suraksha import audit
@@ -32,11 +35,33 @@ def _fernet(key: str | None = None) -> Fernet:
     return Fernet(key.encode())
 
 
+def _normalise(value: str) -> str:
+    return " ".join(value.split()).casefold()
+
+
+def token_for(kind: SecretKind, value: str, *, key: str | None = None) -> str:
+    """The same person's name gets the same token wherever it appears (typed in the chat,
+    read off the death certificate, the passbook), so agents can see that two documents
+    agree without seeing the name. Keyed with the vault key: without it a token cannot be
+    matched against a list of guessed names."""
+    key = key or get_settings().vault_key
+    if not key:
+        raise VaultError("VAULT_KEY is not set; see .env.example")
+    msg = f"{kind.value}:{_normalise(value)}".encode()
+    digest = hmac.new(key.encode(), msg, hashlib.sha256).digest()
+    return f"tok_{kind.value[:3]}_{base64.urlsafe_b64encode(digest[:12]).decode()}"
+
+
 def tokenize(session: Session, kind: SecretKind, value: str, *, key: str | None = None) -> str:
-    token = f"tok_{kind.value[:3]}_{secrets.token_urlsafe(12)}"
+    token = token_for(kind, value, key=key)
+    if session.get(VaultSecret, token) is not None:
+        return token
     ciphertext = _fernet(key).encrypt(value.strip().encode())
-    session.add(VaultSecret(token=token, kind=kind.value, ciphertext=ciphertext))
-    session.flush()
+    try:
+        with session.begin_nested():  # another request may store the same value meanwhile
+            session.add(VaultSecret(token=token, kind=kind.value, ciphertext=ciphertext))
+    except IntegrityError:
+        pass
     return token
 
 

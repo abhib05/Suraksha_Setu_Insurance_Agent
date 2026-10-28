@@ -1,0 +1,9 @@
+{
+  "agent": "document",
+  "model": "muse-spark-1.3",
+  "text": "{\"doc_type\": \"id_proof\", \"embedded_instructions\": [], \"fields\": [{\"confidence\": 0.99, \"name\": \"name\", \"value\": \"KAVITA SAMPLE\"}, {\"confidence\": 0.99, \"name\": \"date_of_birth\", \"value\": \"1988-01-01\"}, {\"confidence\": 0.99, \"name\": \"aadhaar_masked\", \"value\": \"XXXX XXXX 7302\"}], \"quality_flags\": []}",
+  "input_tokens": 1681,
+  "output_tokens": 506,
+  "cost_usd": 0.0032826500000000002,
+  "replayed": false
+}

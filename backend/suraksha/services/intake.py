@@ -9,6 +9,7 @@ from datetime import date
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from suraksha.agents.conversation.agent import IntakeUpdates
@@ -31,9 +32,14 @@ NAME_FIELDS = {"speaker_name": "speaker_name_token", "deceased_name": "deceased_
 def get_intake(session: Session, case_id: str) -> m.Intake:
     row = session.get(m.Intake, case_id)
     if row is None:
-        row = m.Intake(case_id=case_id, draft={})
-        session.add(row)
-        session.flush()
+        # The console's first GET and POST of the chat can both get here; the loser of the
+        # insert reads the winner's row instead of failing.
+        try:
+            with session.begin_nested():
+                row = m.Intake(case_id=case_id, draft={})
+                session.add(row)
+        except IntegrityError:
+            row = session.get(m.Intake, case_id, populate_existing=True)
     return row
 
 
@@ -61,6 +67,13 @@ def merge(session: Session, intake: m.Intake, updates: IntakeUpdates) -> list[st
         if draft.get(key) != value:
             draft[key] = value
             changed.append(key)
+    # "I am the nominee": the agent only sees "known" for names, so it cannot copy the
+    # speaker's name across itself.
+    nominee_rel = draft.get("nominee_relationship")
+    speaker_is_nominee = nominee_rel and nominee_rel == draft.get("speaker_relationship")
+    if speaker_is_nominee and draft.get("speaker_name_token") and "nominee_name_token" not in draft:
+        draft["nominee_name_token"] = draft["speaker_name_token"]
+        changed.append("nominee_name_token")
     intake.draft = draft
     return changed
 

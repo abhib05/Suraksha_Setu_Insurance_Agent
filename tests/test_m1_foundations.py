@@ -4,6 +4,7 @@ audit_events. Plus the guarantees each piece makes on its own."""
 import io
 
 import pytest
+from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import text
@@ -134,3 +135,29 @@ def test_aadhaar_text_rules():
     assert not is_aadhaar("1" + AADHAAR[1:])  # cannot start with 0/1
     masked, n = mask_text(f"UID {AADHAAR[:4]}-{AADHAAR[4:8]}-{AADHAAR[8:]}, mob 9876543210")
     assert n == 1 and masked == f"UID XXXX XXXX {AADHAAR[8:]}, mob 9876543210"
+
+
+def test_same_name_same_token_without_revealing_it():
+    key = Fernet.generate_key().decode()
+    a = vault.token_for(vault.SecretKind.NAME, "Ramesh Sample", key=key)
+    assert a == vault.token_for(vault.SecretKind.NAME, "  RAMESH   sample ", key=key)
+    assert a != vault.token_for(vault.SecretKind.NAME, "Suresh Sample", key=key)
+    assert a != vault.token_for(vault.SecretKind.PHONE, "Ramesh Sample", key=key)
+    assert a != vault.token_for(vault.SecretKind.NAME, "Ramesh Sample",
+                                key=Fernet.generate_key().decode())  # fmt: skip
+    assert "ramesh" not in a.lower()
+
+
+def test_tokenizing_a_name_twice_keeps_one_secret(client):
+    with session_scope() as s:
+        t1 = vault.tokenize(s, vault.SecretKind.NAME, "Twice Name Qwerty")
+        t2 = vault.tokenize(s, vault.SecretKind.NAME, "TWICE name qwerty")
+        assert t1 == t2
+        assert vault.reveal(s, t1, actor="test", purpose="check") == "Twice Name Qwerty"
+
+
+def test_consent_names_the_speaker_so_the_interview_does_not_ask(client):
+    case_id = client.post("/cases", json={}).json()["case_id"]
+    client.post(f"/cases/{case_id}/consent", json={"given_by_name": "Sunita Sample"})
+    known = client.get(f"/cases/{case_id}/chat").json()["known"]
+    assert known["speaker_name"] == "known"

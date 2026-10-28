@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"The death certificate is listed as missing in the checklist and is not among the attachments, so the bank cannot verify the death.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"Eligibility remains unknown under RUPAY-R2 because the RuPay card's last transaction date is still needed, and the enclosed passbook entries show salary and premium transactions rather than card use.\", \"severity\": \"blocker\", \"target\": \"rupay-bank-declaration.card_last_used\"}, {\"reason\": \"The FIR is recorded at a Traffic police station although the reported accident is a fall from construction scaffolding rather than a road-traffic incident, which the insurer is likely to query.\", \"severity\": \"warning\", \"target\": \"rupay-claim-form.police_station\"}, {\"reason\": \"The checklist shows the claim form is unsigned and the nominee's cancelled cheque or passbook copy for payment is missing, both of which the bank will require before acceptance.\", \"severity\": \"warning\", \"target\": \"packet\"}]}",
+  "input_tokens": 2304,
+  "output_tokens": 3280,
+  "cost_usd": 0.074816,
+  "replayed": false
+}

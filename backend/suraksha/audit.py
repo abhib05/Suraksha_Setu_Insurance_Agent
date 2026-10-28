@@ -68,6 +68,9 @@ def append(
     detail: dict[str, Any] | None = None,
 ) -> AuditEvent:
     """Record one step. Pass `input`/`output` to store their hashes, never their content."""
+    # Held until commit. The timeout turns a stuck holder into an error instead of a hang
+    # (an async endpoint waiting here blocks the event loop, and with it every commit).
+    session.execute(text("SET LOCAL lock_timeout = '30s'"))
     session.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": _LOCK_KEY})
     prev = session.scalar(select(AuditEvent.hash).order_by(AuditEvent.id.desc()).limit(1))
     event = AuditEvent(

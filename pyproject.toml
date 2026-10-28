@@ -53,6 +53,9 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 
 [tool.poe.tasks]
 dev = { cmd = "python scripts/dev.py", help = "Start Postgres, Temporal, API, mock portal and console" }
+demo = { cmd = "python scripts/dev.py", env = { AGENTS = "live", LLM_MODE = "record", LLM_RECORDINGS_DIR = "data/demo-recordings", CLAIM_STATUS_POLL_SECONDS = "5" }, help = "Same as dev with the live models; answers are recorded under data/ so a re-run replays them" }
+demo-case = { cmd = "python scripts/demo_case.py", help = "Run eval case a or c through the running app (e.g. `poe demo-case c`) to prepare a demo" }
+demo-reset = { cmd = "python scripts/demo_reset.py", help = "Delete every local case for a clean demo (asks first)" }
 infra = { cmd = "docker compose up -d", help = "Start Postgres and Temporal only" }
 down = { cmd = "docker compose down", help = "Stop Postgres and Temporal" }
 api = { cmd = "uvicorn suraksha.api.main:app --reload --port 8000 --app-dir backend", help = "Run the API" }

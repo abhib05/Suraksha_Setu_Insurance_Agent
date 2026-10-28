@@ -28,6 +28,16 @@ uv run poe dev                # Postgres + Temporal (Docker), API, mock portal, 
 tests need `poe infra` running), `poe migrate`, `poe lint`, `poe check-models`, `poe openapi`,
 `poe down`. `uv run poe` lists them all.
 
+## Demo (M7)
+
+[docs/demo-script.md](docs/demo-script.md) is the 5-minute script, with what to say and the
+lines to type. `uv run poe demo-reset` deletes every local case (it asks first), `uv run poe
+demo` starts the app with the live Meta models (model answers are recorded under
+`data/demo-recordings`, and claim status is checked every 5 seconds), and `uv run poe
+demo-case c` runs eval case C through the running app so it is ready to show.
+`uv run poe eval` scores every eval case against its `expected.json` (see
+[evals/README.md](evals/README.md)).
+
 ## Workflows (M2)
 
 `case_workflow` (one per death): consent → interview → documents → discovery → eligibility →

@@ -13,6 +13,7 @@ from suraksha.contracts import ConsentMethod, ConsentPurpose, ConsentRecord
 from suraksha.db.base import new_id, session_scope
 from suraksha.db.models import Case
 from suraksha.services import consent, docstore, vault
+from suraksha.services import intake as intake_svc
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -81,6 +82,10 @@ async def give_consent(case_id: str, body: ConsentIn, session: DB) -> ConsentOut
         timestamp=datetime.now(UTC),
     )
     consent_id = consent.record(session, record)
+    # The person who consents is the one talking: the interview need not ask their name.
+    row = intake_svc.get_intake(session, case_id)
+    if "speaker_name_token" not in row.draft:
+        row.draft = {**row.draft, "speaker_name_token": token}
     session.commit()  # the workflow may act on consent as soon as it is signalled
     from suraksha.api.workflows import signal_consent_if_running
 
@@ -105,9 +110,10 @@ class DocumentOut(BaseModel):
 
 
 @router.post("/{case_id}/documents", response_model=DocumentOut, status_code=201)
-async def upload_document(case_id: str, file: UploadFile, session: DB) -> DocumentOut:
+def upload_document(case_id: str, file: UploadFile, session: DB) -> DocumentOut:
+    # Plain `def`: the model reads the photo for seconds, which must not block the event loop.
     _case(session, case_id)
-    data = await file.read()
+    data = file.file.read()
     try:
         doc = docstore.save(
             session,
@@ -120,6 +126,7 @@ async def upload_document(case_id: str, file: UploadFile, session: DB) -> Docume
         raise HTTPException(403, str(e)) from e
     except docstore.DocumentRejectedError as e:
         raise HTTPException(422, str(e)) from e
+    session.commit()  # keep the stored photo, and free the audit lock, before the model call
     status = _extract(session, doc)
     return DocumentOut(
         doc_id=doc.id,

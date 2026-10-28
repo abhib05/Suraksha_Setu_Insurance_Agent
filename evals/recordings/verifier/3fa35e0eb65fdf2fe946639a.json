@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Cause of death is 'illness' but PMSBY under rule PMSBY-R2 only covers accidental death and eligibility is marked not_eligible, so this PMSBY claim should not be submitted as an accident claim.\", \"severity\": \"blocker\", \"target\": \"pmsby-claim-form.cause_of_death\"}]}",
+  "input_tokens": 1894,
+  "output_tokens": 2310,
+  "cost_usd": 0.053776,
+  "replayed": false
+}

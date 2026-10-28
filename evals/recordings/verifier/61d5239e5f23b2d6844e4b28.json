@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Eligibility is not_eligible under PMJJBY-R2 because the illness death on 2026-08-20 occurred only 15 days after the new PMJJBY enrolment premium on 2026-08-05, within the initial lien period, so the claim is expected to be rejected.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The nominee account is sourced only from the family statement with no cancelled cheque or nominee passbook copy attached and that checklist item is marked not done, so the bank cannot verify the payment account.\", \"severity\": \"warning\", \"target\": \"pmjjby-claim-form.nominee_account\"}, {\"reason\": \"The checklist marks the claim form as not yet signed or thumb-printed by the nominee, which a bank officer would require before accepting the packet.\", \"severity\": \"warning\", \"target\": \"packet\"}]}",
+  "input_tokens": 1845,
+  "output_tokens": 2663,
+  "cost_usd": 0.06064,
+  "replayed": false
+}

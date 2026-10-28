@@ -800,11 +800,8 @@ export interface components {
         };
         /** StartIn */
         StartIn: {
-            /**
-             * Status Poll Seconds
-             * @default 30
-             */
-            status_poll_seconds: number;
+            /** Status Poll Seconds */
+            status_poll_seconds?: number;
             /**
              * Wait For Intake
              * @default true

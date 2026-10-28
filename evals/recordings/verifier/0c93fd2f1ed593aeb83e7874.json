@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Cause of death is recorded as illness, but RuPay cover under RUPAY-R1 only pays for accidental death, so this claim is ineligible as submitted.\", \"severity\": \"blocker\", \"target\": \"rupay-claim-form.cause_of_death\"}, {\"reason\": \"Card last used on 2026-03-01 is more than 90 days before the 2026-08-20 date of death, failing the RuPay card-usage requirement under RUPAY-R2.\", \"severity\": \"blocker\", \"target\": \"rupay-bank-declaration.card_last_used\"}]}",
+  "input_tokens": 2109,
+  "output_tokens": 2975,
+  "cost_usd": 0.067936,
+  "replayed": false
+}

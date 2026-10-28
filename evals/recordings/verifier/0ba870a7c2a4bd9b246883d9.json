@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": []}",
+  "input_tokens": 2064,
+  "output_tokens": 1891,
+  "cost_usd": 0.046076,
+  "replayed": false
+}

@@ -24,7 +24,21 @@ type CaseState = {
 
 const CASE_KEY = 'suraksha.caseId'
 
+// "2026-05-28|PMJJBY PREM RENEWAL|436|DR" -> "2026-05-28 · PMJJBY PREM RENEWAL · ₹436 debit"
+function txnText(snippet: string): string {
+  const [on, desc, amount, side] = snippet.split('|')
+  if (!side) return snippet
+  return `${on} · ${desc} · ₹${Number(amount).toLocaleString('en-IN')} ${side === 'DR' ? 'debit' : 'credit'}`
+}
+
 function readCaseId(): string | null {
+  // `/?case=<id>` opens a given case (e.g. one prepared by scripts/demo_case.py).
+  const fromUrl = new URLSearchParams(window.location.search).get('case')
+  if (fromUrl) {
+    saveCaseId(fromUrl)
+    window.history.replaceState(null, '', window.location.pathname)
+    return fromUrl
+  }
   try {
     return localStorage.getItem(CASE_KEY)
   } catch {
@@ -45,12 +59,14 @@ export default function Intake() {
   const [caseId, setCaseId] = useState<string | null>(readCaseId)
   const [messages, setMessages] = useState<Msg[]>([])
   const [consent, setConsent] = useState(false)
+  const [consentName, setConsentName] = useState('')
   const [complete, setComplete] = useState(false)
   const [finished, setFinished] = useState(false)
   const [docs, setDocs] = useState<Doc[]>([])
   const [state, setState] = useState<CaseState | null>(null)
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
+  const [reading, setReading] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [chosen, setChosen] = useState<string[] | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
@@ -128,9 +144,8 @@ export default function Intake() {
   }
 
   async function agree() {
-    if (!caseId) return
-    const name = window.prompt('Your name (kept encrypted, used only for this claim):')
-    if (!name) return
+    const name = consentName.trim()
+    if (!caseId || !name) return
     await run('Recording consent', () =>
       api('POST', `/cases/${caseId}/consent`, { given_by_name: name, method: 'chat' }),
     )
@@ -140,12 +155,23 @@ export default function Intake() {
 
   async function upload(files: FileList | null) {
     if (!caseId || !files) return
-    for (const file of Array.from(files)) {
+    // All photos are read at once, and the chat stays open meanwhile: reading takes a while,
+    // and the family can keep answering questions. Each photo shows up as soon as it is read.
+    const list = Array.from(files)
+    setReading((n) => n + list.length)
+    setError(null)
+    const results = await Promise.allSettled(list.map(async (file) => {
       const form = new FormData()
       form.append('file', file)
-      await run(`Reading ${file.name}`, () => api('POST', `/cases/${caseId}/documents`, form))
-    }
-    await refresh(caseId)
+      try {
+        await api('POST', `/cases/${caseId}/documents`, form)
+      } finally {
+        setReading((n) => n - 1)
+      }
+      setDocs(await api<Doc[]>('GET', `/cases/${caseId}/documents`))
+    }))
+    const failed = results.flatMap((r, i) => (r.status === 'rejected' ? [list[i].name] : []))
+    if (failed.length) setError(`Could not read ${failed.join(', ')}`)
   }
 
   async function finish() {
@@ -222,7 +248,9 @@ export default function Intake() {
           {!consent && (
             <div className="consent">
               <span>We use your details only to find covers and prepare claims for a reviewer.</span>
-              <button className="primary" onClick={agree} disabled={!!busy}>
+              <input placeholder="Your name (kept encrypted)" value={consentName}
+                onChange={(e) => setConsentName(e.target.value)} />
+              <button className="primary" onClick={agree} disabled={!!busy || !consentName.trim()}>
                 I agree
               </button>
             </div>
@@ -261,7 +289,7 @@ export default function Intake() {
               />
             </label>
           </div>
-          {busy?.startsWith('Reading') && <p className="muted">{busy}…</p>}
+          {reading > 0 && <p className="muted">Reading {reading} photo{reading > 1 ? 's' : ''}…</p>}
           {docs.length === 0 && (
             <p className="muted">
               Passbook pages with recent entries, death certificate, FIR and post-mortem report
@@ -274,7 +302,7 @@ export default function Intake() {
           <button
             className="primary wide"
             onClick={finish}
-            disabled={!consent || finished || !!busy}
+            disabled={!consent || finished || !!busy || reading > 0}
             title={complete ? '' : 'The assistant has not confirmed every answer yet'}
           >
             {finished ? 'Sent for checking' : complete ? 'Finish and check covers' : 'Finish anyway'}
@@ -306,7 +334,7 @@ export default function Intake() {
                 <div>
                   <strong>{e.scheme_id.toUpperCase()}</strong>{' '}
                   <span className="pill">{r?.status.replace(/_/g, ' ')}</span>
-                  {e.expected_payout_inr ? (
+                  {e.expected_payout_inr && r?.status !== 'not_eligible' ? (
                     <span className="muted"> · up to ₹{e.expected_payout_inr.toLocaleString('en-IN')}</span>
                   ) : null}
                   <p>{r?.explanation_en}</p>
@@ -314,8 +342,11 @@ export default function Intake() {
                     <ul className="evidence small">
                       {e.evidence.map((ev, i) => (
                         <li key={i}>
-                          <span className="mono">{ev.snippet}</span>{' '}
-                          <span className="muted">({ev.doc_id}, {ev.field}{e.strength === 'possible' ? ', weak' : ''})</span>
+                          <span className="mono">{txnText(ev.snippet)}</span>{' '}
+                          <span className="muted">
+                            ({(docs.find((d) => d.doc_id === ev.doc_id)?.doc_type ?? ev.doc_id).replace(/_/g, ' ')}
+                            {e.strength === 'possible' ? ', weak' : ''})
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -327,7 +358,9 @@ export default function Intake() {
           })}
           {state.stage === 'awaiting_choice' && state.entitlements.length > 0 && (
             <button className="primary" onClick={confirmCovers} disabled={!!busy}>
-              Start these claims
+              {picked.length === 0
+                ? 'Nothing to claim: close the case'
+                : `Start ${picked.length === 1 ? 'this claim' : `these ${picked.length} claims`}`}
             </button>
           )}
           {Object.keys(state.claims).length > 0 && (

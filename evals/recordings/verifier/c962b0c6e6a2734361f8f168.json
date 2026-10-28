@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Death certificate is not attached and is marked missing in the checklist, so the bank cannot verify the death for a PMJJBY claim.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The FIR and post-mortem report available as documents are not included in the attachments, so the stated cause of death cannot be verified from the enclosed packet.\", \"severity\": \"blocker\", \"target\": \"pmjjby-claim-form.cause_of_death\"}, {\"reason\": \"The claim form is marked as not yet signed or thumb-printed by the nominee, which the bank would require before accepting it.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"No cancelled cheque or passbook copy for the nominee is enclosed, so the nominee account shown on the form cannot be verified for payment.\", \"severity\": \"warning\", \"target\": \"pmjjby-claim-form.nominee_account\"}]}",
+  "input_tokens": 1899,
+  "output_tokens": 2801,
+  "cost_usd": 0.063616,
+  "replayed": false
+}

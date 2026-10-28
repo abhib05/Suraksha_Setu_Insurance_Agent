@@ -2347,8 +2347,7 @@
           "status_poll_seconds": {
             "type": "integer",
             "minimum": 1.0,
-            "title": "Status Poll Seconds",
-            "default": 30
+            "title": "Status Poll Seconds"
           },
           "wait_for_intake": {
             "type": "boolean",
