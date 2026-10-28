@@ -101,7 +101,8 @@ def score_case(case: str) -> Score:
         pay = expected.get("payout_inr", {}).get(scheme)
         if pay is not None:
             got_pay = ent.expected_payout_inr
-            sc.add("payout", got_pay == pay, f"{scheme} payout Rs {got_pay:,} (expected Rs {pay:,})")
+            label = f"{scheme} payout Rs {got_pay:,} (expected Rs {pay:,})"
+            sc.add("payout", got_pay == pay, label)
         missing = [t.value for t in required_documents(ent.scheme_id) if t not in held]
         want_missing = expected.get("missing_documents", {}).get(scheme, [])
         if "missing_documents" in expected and scheme in expected["missing_documents"]:
