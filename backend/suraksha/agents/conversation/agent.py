@@ -73,6 +73,7 @@ def take_turn(
     known: dict,
     consent_given: bool,
     complete_json: Callable | None = None,
+    today: date | None = None,
 ) -> tuple[ConversationTurn, str]:
     """Returns the checked turn and the prompt version used."""
     prompt = load_prompt("conversation")
@@ -80,7 +81,7 @@ def take_turn(
     context = (
         f"Consent status: {'GIVEN' if consent_given else 'NOT YET GIVEN'}.\n"
         f"What we already know (do not ask again): {json.dumps(known, default=str)}\n"
-        f"Today's date: {date.today().isoformat()}"
+        f"Today's date: {(today or date.today()).isoformat()}"
     )
     messages = [
         {"role": "system", "content": prompt.text},

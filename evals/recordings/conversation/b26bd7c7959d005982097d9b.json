@@ -1,0 +1,9 @@
+{
+  "agent": "conversation",
+  "model": "muse-spark-1.3",
+  "text": "{\"intake_complete\": false, \"reply\": \"Thank you, Sunita ji. I have noted Kaveri Gramin Bank. Did Ramesh ji have a debit or ATM card for this account?\", \"updates\": {\"age_at_death\": null, \"bank_name\": \"Kaveri Gramin Bank\", \"card_issue_date\": null, \"card_kind\": null, \"card_last_used\": null, \"date_of_death\": null, \"deceased_name\": null, \"event_description\": null, \"event_type\": null, \"has_debit_card\": null, \"nominee_name\": null, \"nominee_relationship\": null, \"place_of_death\": null, \"speaker_name\": null, \"speaker_relationship\": null}, \"wants_human\": false}",
+  "input_tokens": 2158,
+  "output_tokens": 563,
+  "cost_usd": 0.00341715,
+  "replayed": false
+}

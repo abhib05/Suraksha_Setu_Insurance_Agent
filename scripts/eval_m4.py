@@ -12,6 +12,7 @@
 Prints spend at the end. Exit code 1 if any check fails.
 """
 
+import hashlib
 import json
 import os
 import sys
@@ -27,7 +28,11 @@ from suraksha.agents.document.agent import read_document  # noqa: E402
 from suraksha.config import get_settings  # noqa: E402
 from suraksha.contracts import CaseFacts  # noqa: E402
 from suraksha.services.docstore.aadhaar import mask_image  # noqa: E402
-from suraksha.services.intake import NAME_FIELDS, to_case_facts  # noqa: E402
+from suraksha.services.intake import (  # noqa: E402
+    NAME_FIELDS,
+    known_for_prompt,
+    to_case_facts,
+)
 from suraksha.tools.llm import total_spend  # noqa: E402
 from suraksha.tools.models import load_registry  # noqa: E402
 
@@ -103,6 +108,9 @@ def step_poisoned() -> None:
     check(len(txns) == 5, f"transactions still extracted ({len(txns)}/5)")
 
 
+EVAL_TODAY = date(2026, 10, 28)
+
+
 def step_conversation() -> None:
     print("3. Conversation agent (case A)")
     history: list[dict[str, str]] = []
@@ -112,10 +120,13 @@ def step_conversation() -> None:
     for msg in FAMILY_A:
         if msg == "I agree.":
             consent = True  # the console's "I agree" button
-        turn, _ = take_turn(history, msg, known=draft, consent_given=consent)
+        # Same inputs the chat API passes; a fixed "today" keeps the recordings replayable.
+        turn, _ = take_turn(history, msg, known=known_for_prompt(draft), consent_given=consent,
+                            today=EVAL_TODAY)  # fmt: skip
         for k, v in turn.updates.model_dump(exclude_none=True, mode="json").items():
-            draft[NAME_FIELDS.get(k, k)] = f"tok_name_{abs(hash(v)) % 10**6:06d}" if (
-                k in NAME_FIELDS) else v  # fmt: skip
+            draft[NAME_FIELDS.get(k, k)] = (
+                "tok_name_" + hashlib.sha256(v.encode()).hexdigest()[:6] if k in NAME_FIELDS else v
+            )
         complete = complete or turn.intake_complete
         history += [{"role": "user", "content": msg}, {"role": "assistant", "content": turn.reply}]
         print(f"   family: {msg}\n   agent:  {turn.reply[:160]}")
@@ -155,7 +166,7 @@ def step_packets() -> None:
     for ent in match_entitlements(facts, docs):
         result = rules.check_entitlement(ent, rf)
         packet = build_packet(f"eval_{ent.scheme_id.value}", ent, facts, docs, 1)
-        verdict = verify_packet(packet, ent, facts, docs, result)
+        verdict = verify_packet(packet, ent, facts, docs, result, today=EVAL_TODAY)
         model_ran = not any("AI review did not run" in f.reason for f in verdict.findings)
         check(verdict.passed, f"{ent.scheme_id.value} packet passes the verifier")
         check(model_ran, f"{ent.scheme_id.value} Muse Wonder review ran")

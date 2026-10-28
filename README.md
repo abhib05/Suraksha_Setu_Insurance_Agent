@@ -154,4 +154,6 @@ model needs a `reason`, CI enforces it).
 All calls go through `suraksha.tools.llm.complete()`, which logs tokens and cost to
 `evals/recordings/spend.jsonl` and stops at `LLM_SPEND_LIMIT_USD`. `LLM_MODE=replay`
 (the default, and what CI uses) answers from recorded responses and spends nothing;
-`record` calls the API and saves responses; `live` just calls it.
+`record` calls the API for requests not recorded yet and saves them (delete a recording to
+re-record it); `live` just calls it. Structured calls send closed JSON schemas (Muse Spark
+garbles keys of open ones) and every call is capped at 4,096 output tokens.

@@ -1,0 +1,9 @@
+{
+  "agent": "coordinator",
+  "model": "muse-spark-1.3",
+  "text": "{\"summary\": \"This is a PMSBY accidental-death claim that looks eligible under PMSBY-R1, PMSBY-R2, PMSBY-R3 and PMSBY-R4 \\u2014 premium paid for the cover year, accidental death, within age limit, and beyond the 30-day wait. No issues found by the verifier. Still pending for review: nominee-signed claim form, cancelled cheque/passbook copy, and originals/attested copies to carry to the branch. After approval, file through the bank with the family signing the form.\"}",
+  "input_tokens": 463,
+  "output_tokens": 1361,
+  "cost_usd": 0.0062387,
+  "replayed": false
+}

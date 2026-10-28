@@ -1,0 +1,9 @@
+{
+  "agent": "coordinator",
+  "model": "muse-spark-1.3",
+  "text": "{\"summary\": \"PMJJBY claim looks eligible: premium covered the year of death (PMJJBY-R1), death meets accident/30-day rule (PMJJBY-R2), and age limit met (PMJJBY-R3). No issues found by the verifier. Checklist still open: signed nominee claim form, nominee bank proof, and originals/attested copies to carry to branch. After approval, file through the bank with family signature on the form.\"}",
+  "input_tokens": 449,
+  "output_tokens": 1232,
+  "cost_usd": 0.0053913500000000005,
+  "replayed": false
+}

@@ -59,6 +59,32 @@ def total_spend(settings: Settings | None = None) -> float:
         return sum(json.loads(line).get("cost_usd") or 0.0 for line in f if line.strip())
 
 
+# A runaway reply (seen live: 210k tokens, $0.90 in one call) is cut off here; the JSON parse
+# then fails and complete_json's repair round or the caller's fallback takes over.
+MAX_OUTPUT_TOKENS = 4096
+
+
+def closed_schema(model: type[BaseModel]) -> dict[str, Any]:
+    """The model's JSON schema with every object closed (no extra keys, every property
+    required; optional fields stay nullable). Muse Spark garbles the last key of an open
+    schema (e.g. "intake_complete指定") about every time; closed schemas came back clean."""
+
+    def close(node: Any) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object" and "properties" in node:
+                node["additionalProperties"] = False
+                node["required"] = list(node["properties"])
+            for v in node.values():
+                close(v)
+        elif isinstance(node, list):
+            for v in node:
+                close(v)
+
+    schema = model.model_json_schema()
+    close(schema)
+    return schema
+
+
 def complete(
     agent: str,
     messages: list[dict[str, Any]],
@@ -69,7 +95,11 @@ def complete(
     """Run one model call for `agent`. With `response_schema`, the reply is JSON for that schema."""
     settings = settings or get_settings()
     route = routes(settings.models_file)[agent]
-    payload: dict[str, Any] = {"model": route.model, "messages": messages}
+    payload: dict[str, Any] = {
+        "model": route.model,
+        "messages": messages,
+        "max_completion_tokens": MAX_OUTPUT_TOKENS,
+    }
     if route.reasoning_effort:
         payload["reasoning_effort"] = route.reasoning_effort
     if response_schema is not None:
@@ -77,16 +107,17 @@ def complete(
             "type": "json_schema",
             "json_schema": {
                 "name": response_schema.__name__,
-                "schema": response_schema.model_json_schema(),
-                # not strict: strict mode forbids optional fields, which our contracts use
-                "strict": False,
+                "schema": closed_schema(response_schema),
+                "strict": True,
             },
         }
 
     key = _request_key(payload)
     recording = settings.llm_recordings_dir / agent / f"{key}.json"
 
-    if settings.llm_mode == "replay":
+    # Record mode reuses an existing recording too: the model can answer the same request
+    # differently, and a second answer overwriting the first breaks later replays.
+    if settings.llm_mode == "replay" or (settings.llm_mode == "record" and recording.exists()):
         if not recording.exists():
             raise ReplayMissError(
                 f"no recording for {agent} request {key}; run with LLM_MODE=record"
@@ -149,7 +180,7 @@ def _create(client: Any, payload: dict[str, Any], schema: type[BaseModel] | None
 
 
 def _json_mode(payload: dict[str, Any], schema: type[BaseModel]) -> dict[str, Any]:
-    spec = json.dumps(schema.model_json_schema(), ensure_ascii=False)
+    spec = json.dumps(closed_schema(schema), ensure_ascii=False)
     note = {
         "role": "system",
         "content": f"Reply with one JSON object matching this schema:\n{spec}",
@@ -166,7 +197,14 @@ def parse_json(text: str, schema: type[BaseModel]) -> BaseModel:
     body = text.strip()
     if body.startswith("```"):
         body = body.split("\n", 1)[1].rsplit("```", 1)[0]
-    return schema.model_validate_json(body)
+    try:
+        return schema.model_validate_json(body)
+    except ValueError:
+        # Seen live: a sentence of prose before the JSON object. Try the outermost {...}.
+        start, end = body.find("{"), body.rfind("}")
+        if start <= 0 or end < start:
+            raise
+        return schema.model_validate_json(body[start : end + 1])
 
 
 def complete_json[T: BaseModel](

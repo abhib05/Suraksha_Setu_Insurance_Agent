@@ -157,6 +157,7 @@ def model_findings(
     docs: list[ExtractedDocument],
     rule_result: RuleResult,
     complete_json: Callable | None = None,
+    today: date | None = None,
 ) -> list[Finding]:
     prompt = load_prompt("verifier")
     complete_json = complete_json or llm.complete_json
@@ -166,7 +167,7 @@ def model_findings(
         "documents": [{"doc_id": d.doc_id, "doc_type": d.doc_type.value,
                        "fields": [(f.name, f.value) for f in d.fields]} for d in docs],
         "eligibility": rule_result.model_dump(mode="json"),
-        "today": date.today().isoformat(),
+        "today": (today or date.today()).isoformat(),
     }  # fmt: skip
     out, _ = complete_json(
         "verifier",
@@ -190,11 +191,12 @@ def verify_packet(
     *,
     use_model: bool = True,
     complete_json: Callable | None = None,
+    today: date | None = None,  # fixed in evals so recordings replay on any day
 ) -> VerifierVerdict:
     findings = deterministic_findings(packet, ent, facts, docs, rule_result)
     if use_model:
         try:
-            findings += model_findings(packet, facts, docs, rule_result, complete_json)
+            findings += model_findings(packet, facts, docs, rule_result, complete_json, today)
         except Exception as e:
             log.info("model review unavailable (%s)", type(e).__name__)
             findings.append(Finding(severity=Severity.WARNING, target="packet",

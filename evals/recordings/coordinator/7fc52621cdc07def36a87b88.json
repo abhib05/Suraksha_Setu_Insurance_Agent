@@ -1,0 +1,9 @@
+{
+  "agent": "coordinator",
+  "model": "muse-spark-1.3",
+  "text": "{\"summary\": \"RuPay accident cover claim looks eligible under RUPAY-R1 for accidental death and RUPAY-R2 for card use within 90 days before the accident. No issues found by the verifier. Still pending: signed nominee claim form, nominee's cancelled cheque or passbook copy, and originals or attested copies for the branch. After approval, file through the bank with the family signing the form.\"}",
+  "input_tokens": 435,
+  "output_tokens": 906,
+  "cost_usd": 0.00398835,
+  "replayed": false
+}
