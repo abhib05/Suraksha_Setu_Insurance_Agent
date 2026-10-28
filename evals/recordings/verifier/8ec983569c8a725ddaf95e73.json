@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Death certificate is not enclosed (the checklist marks it missing), so the bank cannot verify the death for this PMJJBY claim.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The stated accidental cause is sourced from the FIR (case_b-d3), but neither the FIR nor the post-mortem report (case_b-d4) is included in the attachments for the bank to verify it.\", \"severity\": \"blocker\", \"target\": \"pmjjby-claim-form.cause_of_death\"}, {\"reason\": \"The claim form is not yet signed or thumb-printed by the nominee, as shown by the incomplete checklist item and the unsigned cover letter.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The nominee account is taken only from the family statement and no cancelled cheque or nominee passbook copy is enclosed to verify the payment account.\", \"severity\": \"warning\", \"target\": \"pmjjby-claim-form.nominee_account\"}]}",
+  "input_tokens": 1898,
+  "output_tokens": 3583,
+  "cost_usd": 0.079252,
+  "replayed": false
+}

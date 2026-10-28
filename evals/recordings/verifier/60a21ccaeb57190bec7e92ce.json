@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Cause of death is recorded as illness, but eligibility is not_eligible under PMSBY-R2 because PMSBY only covers accidental death, so this claim does not fit the scheme.\", \"severity\": \"blocker\", \"target\": \"pmsby-claim-form.cause_of_death\"}, {\"reason\": \"The packet has a blank accident description and its checklist lists the FIR/police report and post-mortem report as missing, which a bank would require to support any PMSBY accidental-death claim.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The checklist shows the claim form has not yet been signed or thumb-printed by the nominee, so a bank officer would not accept it as submitted.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The checklist shows the nominee's cancelled cheque or passbook copy for payment verification is missing, so the nominee payment account cannot be verified.\", \"severity\": \"warning\", \"target\": \"packet\"}]}",
+  "input_tokens": 1892,
+  "output_tokens": 2747,
+  "cost_usd": 0.062508,
+  "replayed": false
+}

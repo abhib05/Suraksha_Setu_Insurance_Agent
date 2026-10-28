@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Eligibility is not_eligible under PMJJBY-R2 because death from illness on 2026-08-20 occurred 15 days after new enrolment on 2026-08-05, within the 30-day lien period, so this claim should not be submitted as eligible.\", \"severity\": \"blocker\", \"target\": \"packet\"}]}",
+  "input_tokens": 1843,
+  "output_tokens": 2752,
+  "cost_usd": 0.062412,
+  "replayed": false
+}

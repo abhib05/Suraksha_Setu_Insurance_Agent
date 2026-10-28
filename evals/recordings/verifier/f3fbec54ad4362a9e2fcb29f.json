@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Card last-used date is blank while eligibility remains unknown under RUPAY-R2 for missing card_last_txn_date, so the bank cannot confirm the RuPay card-usage condition.\", \"severity\": \"blocker\", \"target\": \"rupay-bank-declaration.card_last_used\"}, {\"reason\": \"No death certificate is included in the attachments and the checklist marks it missing, which the bank/insurer will require before accepting the claim.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The FIR police station is Hubballi Traffic PS but the stated cause is a fall from construction-site scaffolding, a jurisdiction/incident-type mismatch the bank officer will need clarified.\", \"severity\": \"warning\", \"target\": \"rupay-claim-form.police_station\"}]}",
+  "input_tokens": 2303,
+  "output_tokens": 3116,
+  "cost_usd": 0.071532,
+  "replayed": false
+}

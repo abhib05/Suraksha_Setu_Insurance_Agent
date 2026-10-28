@@ -64,4 +64,6 @@ lint = { cmd = "ruff check .", help = "Lint" }
 fmt = { cmd = "ruff format .", help = "Format" }
 check-models = { cmd = "python scripts/check_models.py", help = "Validate models.yaml against the model policy" }
 openapi = { cmd = "python scripts/export_openapi.py", help = "Write console/openapi.json from the API" }
-ci = { sequence = ["lint", "check-models", "test"], help = "Everything CI runs for the backend" }
+eval = { cmd = "python scripts/eval.py", help = "Score every eval case against expected.json (replays recorded model calls)" }
+eval-record = { cmd = "python scripts/eval.py --record", help = "Same, calling the Meta API for requests not recorded yet" }
+ci = { sequence = ["lint", "check-models", "test", "eval"], help = "Everything CI runs for the backend" }

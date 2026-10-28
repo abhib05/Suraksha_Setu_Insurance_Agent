@@ -1,0 +1,9 @@
+{
+  "agent": "verifier",
+  "model": "muse-wonder-1.0",
+  "text": "{\"findings\": [{\"reason\": \"Cause of death is recorded as illness on the death certificate, but RuPay cover is accident-only and eligibility is not_eligible under RUPAY-R1.\", \"severity\": \"blocker\", \"target\": \"rupay-claim-form.cause_of_death\"}, {\"reason\": \"Card last used on 2026-03-01 is more than 90 days before death on 2026-08-20, failing the RuPay card-usage condition cited in RUPAY-R2.\", \"severity\": \"blocker\", \"target\": \"rupay-bank-declaration.card_last_used\"}, {\"reason\": \"No FIR or police report and no post-mortem report are attached, although both are listed as missing for this accidental-death claim.\", \"severity\": \"blocker\", \"target\": \"packet\"}, {\"reason\": \"The accident description is blank, so the form provides no account of an alleged accident for the bank to assess.\", \"severity\": \"warning\", \"target\": \"rupay-claim-form.accident_description\"}, {\"reason\": \"The checklist shows the claim form is unsigned and the nominee's cancelled cheque or passbook copy for payment is missing, both of which the bank would require before acceptance.\", \"severity\": \"warning\", \"target\": \"packet\"}]}",
+  "input_tokens": 2106,
+  "output_tokens": 2383,
+  "cost_usd": 0.056084,
+  "replayed": false
+}
