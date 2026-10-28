@@ -94,12 +94,14 @@ def score_case(case: str) -> Score:
             ok = result.status.value == want["status"] and result.rule_ids == want["rule_ids"]
             if "missing_facts" in want:
                 ok = ok and result.missing_facts == want["missing_facts"]
-            sc.add("rules", ok, f"{scheme} {result.status.value} {', '.join(result.rule_ids)}"
-                   + ("" if ok else f" (expected {want['status']} {want['rule_ids']})"))  # fmt: skip
+            label = f"{scheme} {result.status.value} {', '.join(result.rule_ids)}"
+            if not ok:
+                label += f" (expected {want['status']} {want['rule_ids']})"
+            sc.add("rules", ok, label)
         pay = expected.get("payout_inr", {}).get(scheme)
         if pay is not None:
-            sc.add("payout", ent.expected_payout_inr == pay,
-                   f"{scheme} payout Rs {ent.expected_payout_inr:,} (expected Rs {pay:,})")  # fmt: skip
+            got_pay = ent.expected_payout_inr
+            sc.add("payout", got_pay == pay, f"{scheme} payout Rs {got_pay:,} (expected Rs {pay:,})")
         missing = [t.value for t in required_documents(ent.scheme_id) if t not in held]
         want_missing = expected.get("missing_documents", {}).get(scheme, [])
         if "missing_documents" in expected and scheme in expected["missing_documents"]:
@@ -119,8 +121,8 @@ def score_case(case: str) -> Score:
         else:
             why = " ".join(blockers)
             explained = any(t in why for t in missing) or "ligib" in why
-            sc.add("packets", not verdict.passed and explained,
-                   f"{scheme} packet blocked with the reason ({len(blockers)} blocker(s))")  # fmt: skip
+            label = f"{scheme} packet blocked with the reason ({len(blockers)} blocker(s))"
+            sc.add("packets", not verdict.passed and explained, label)
         if USE_MODEL:
             ran = not any("AI review did not run" in f.reason for f in verdict.findings)
             sc.add("packets", ran, f"{scheme} Muse Wonder review ran")
@@ -139,7 +141,8 @@ def scorecard(scores: list[Score]) -> str:
         for area in ("covers", "rules", "payout", "missing", "packets"):
             hits = [ok for a, ok, _ in s.checks if a == area]
             cells.append(f"{sum(hits)}/{len(hits)}" if hits else "–")
-        lines.append(f"| {s.case} | " + " | ".join(cells) + f" | {'PASS' if s.passed else 'FAIL'} |")
+        result = "PASS" if s.passed else "FAIL"
+        lines.append(f"| {s.case} | " + " | ".join(cells) + f" | {result} |")
     for s in scores:
         lines += ["", f"## {s.case}", ""]
         lines += [f"- {'PASS' if ok else 'FAIL'} {label}" for _, ok, label in s.checks]
