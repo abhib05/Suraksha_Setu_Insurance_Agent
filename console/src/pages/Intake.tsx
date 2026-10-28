@@ -1,7 +1,9 @@
 // Family intake (M4): chat with the conversation agent, consent, photo uploads with what we
 // read from each, then "finish" so the case workflow checks covers and briefs the family.
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, BASE, type Schemas } from '../api/client'
+import { RuleChips } from '../rules'
 
 type Msg = { role: string; content: string }
 type Doc = Schemas['DocumentView']
@@ -9,7 +11,13 @@ type CaseState = {
   stage: string
   briefing: string | null
   preselected: string[]
-  entitlements: { entitlement_id: string; scheme_id: string; expected_payout_inr: number | null }[]
+  entitlements: {
+    entitlement_id: string
+    scheme_id: string
+    strength: string
+    expected_payout_inr: number | null
+    evidence: { doc_id: string; field: string; snippet: string }[]
+  }[]
   rule_results: { entitlement_id: string; status: string; explanation_en: string; rule_ids: string[] }[]
   claims: Record<string, string>
 }
@@ -194,6 +202,7 @@ export default function Intake() {
         <h1>Intake</h1>
         <span className="muted mono">{caseId}</span>
         <span className="spacer" />
+        <Link to={`/audit/${caseId}`} className="small">Audit log</Link>
         {state && <span className="pill">{state.stage.replace(/_/g, ' ')}</span>}
         <button onClick={newCase}>New case</button>
       </div>
@@ -301,7 +310,17 @@ export default function Intake() {
                     <span className="muted"> · up to ₹{e.expected_payout_inr.toLocaleString('en-IN')}</span>
                   ) : null}
                   <p>{r?.explanation_en}</p>
-                  <p className="muted small">Rules: {r?.rule_ids.join(', ')}</p>
+                  {e.evidence.length > 0 && (
+                    <ul className="evidence small">
+                      {e.evidence.map((ev, i) => (
+                        <li key={i}>
+                          <span className="mono">{ev.snippet}</span>{' '}
+                          <span className="muted">({ev.doc_id}, {ev.field}{e.strength === 'possible' ? ', weak' : ''})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {r && <RuleChips ids={r.rule_ids} passed={r.status === 'eligible' ? true : r.status === 'not_eligible' ? false : undefined} />}
                 </div>
               </label>
             )

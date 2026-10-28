@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import { apiGet } from './api/client'
+import Audit from './pages/Audit'
 import Intake from './pages/Intake'
 import PacketReview from './pages/PacketReview'
 import ReviewQueue from './pages/ReviewQueue'
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/" element={<Intake />} />
           <Route path="/review" element={<ReviewQueue />} />
           <Route path="/review/:claimId" element={<PacketReview />} />
+          <Route path="/audit/:caseId" element={<Audit />} />
         </Routes>
       </main>
     </BrowserRouter>

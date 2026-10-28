@@ -119,3 +119,16 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
 .findings li.blocker { border-color: var(--err); }
 .findings li.warning { border-color: var(--warn); }
 @media (max-width: 860px) { .review-grid { grid-template-columns: 1fr; } .queue { display: block; overflow-x: auto; } }
+
+/* rules, evidence, audit (M7) */
+.rules { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.chip { font-size: 0.78rem; padding: 2px 8px; border-radius: 999px; }
+.chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.rule-card { flex-basis: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 4px; background: var(--bg); }
+.rule-card p { margin: 4px 0; }
+.rule-card pre { white-space: pre-wrap; margin: 4px 0 0; }
+.evidence { margin: 4px 0; padding-left: 18px; }
+.audit td { padding: 6px 8px; }
+.ok { color: var(--accent); font-weight: 600; }
+.actor-agent { border-color: var(--accent); }
+.actor-user { background: var(--user); }

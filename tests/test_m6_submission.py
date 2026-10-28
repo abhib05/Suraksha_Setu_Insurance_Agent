@@ -120,3 +120,14 @@ def test_review_queue_lists_claims_waiting_on_a_reviewer_first(docstore_dir):
     assert detail["open_tasks"] == 1 and detail["tasks"][0]["kind"] == "verifier_failed"
     assert [v["version"] for v in detail["versions"]] == [1]
     assert detail["expected_payout_inr"] == 200_000 and detail["decisions"] == []
+
+
+def test_rules_endpoint_gives_text_and_source_for_every_rule():
+    from suraksha.api.main import app
+
+    rules = {r["id"]: r for r in TestClient(app).get("/rules").json()}
+    assert len(rules) == 9
+    r2 = rules["RUPAY-R2"]
+    assert "90" in r2["title"] + r2["explain_fail"]
+    assert all(r["source_url"].startswith("https://") for r in rules.values()), \
+        [r["id"] for r in rules.values() if not r["source_url"]]

@@ -1,8 +1,10 @@
-"""Review console reads (M6): every claim with where it stands, and one claim's packet
+"""Review console reads (M6, M7): every claim with where it stands, and one claim's packet
 versions, decisions and open tasks. Decisions themselves go through the workflow endpoints
 (`/claims/{id}/approve|return|confirm-payout`, `/tasks/{id}/resolve`)."""
 
+import re
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -11,6 +13,8 @@ from sqlalchemy import func, select
 from suraksha.api.cases import DB
 from suraksha.api.workflows import TaskOut, _claim
 from suraksha.db import models as m
+from suraksha.services.registry import load_scheme
+from suraksha.services.rules import load_rules
 
 router = APIRouter(prefix="/review", tags=["review"])
 
@@ -120,3 +124,41 @@ def claim_detail(claim_id: str, session: DB) -> ClaimDetail:
         decisions=[Decision.model_validate(d, from_attributes=True) for d in decisions],
         tasks=[TaskOut.model_validate(t, from_attributes=True) for t in tasks],
     )  # fmt: skip
+
+
+# --- rules (the text behind every cited rule id) -------------------------------------
+
+rules_router = APIRouter(prefix="/rules", tags=["review"])
+
+
+class RuleOut(BaseModel):
+    id: str
+    scheme: str
+    title: str
+    version: str
+    effective_from: str
+    effective_to: str | None
+    requires: list[str]
+    logic: Any
+    explain_pass: str
+    explain_fail: str
+    source_id: str
+    source_title: str | None
+    source_url: str | None
+
+
+@rules_router.get("", response_model=list[RuleOut])
+def list_rules() -> list[RuleOut]:
+    out = []
+    for r in load_rules():
+        source_id = re.match(r"[A-Z0-9-]+", r.source).group(0)  # "RUPAY-IDFC (...)"
+        src = next((s for s in load_scheme(r.scheme).get("sources", [])
+                    if s["id"] == source_id), {})  # fmt: skip
+        out.append(RuleOut(
+            id=r.id, scheme=r.scheme, title=r.title, version=r.version,
+            effective_from=r.effective_from, effective_to=r.effective_to,
+            requires=list(r.requires), logic=r.logic, explain_pass=r.explain_pass,
+            explain_fail=r.explain_fail, source_id=r.source,
+            source_title=src.get("title"), source_url=src.get("url"),
+        ))  # fmt: skip
+    return out

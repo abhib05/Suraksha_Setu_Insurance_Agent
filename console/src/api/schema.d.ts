@@ -424,6 +424,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rules */
+        get: operations["list_rules_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -751,6 +768,35 @@ export interface components {
             resolved_by: string;
             /** Note */
             note?: string | null;
+        };
+        /** RuleOut */
+        RuleOut: {
+            /** Id */
+            id: string;
+            /** Scheme */
+            scheme: string;
+            /** Title */
+            title: string;
+            /** Version */
+            version: string;
+            /** Effective From */
+            effective_from: string;
+            /** Effective To */
+            effective_to: string | null;
+            /** Requires */
+            requires: string[];
+            /** Logic */
+            logic: unknown;
+            /** Explain Pass */
+            explain_pass: string;
+            /** Explain Fail */
+            explain_fail: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Title */
+            source_title: string | null;
+            /** Source Url */
+            source_url: string | null;
         };
         /** StartIn */
         StartIn: {
@@ -1718,6 +1764,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rules_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"][];
                 };
             };
         };

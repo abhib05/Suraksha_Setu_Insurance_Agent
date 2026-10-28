@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, BASE, type Schemas } from '../api/client'
 import { readReviewer, rupees, SCHEME_NAMES, STAGE_LABELS, usePoll } from '../review'
+import { RuleChips } from '../rules'
 import { TaskList, VerdictBadge } from './ReviewQueue'
 
 type Finding = { severity: string; target: string; reason: string }
@@ -15,6 +16,7 @@ type ClaimState = {
   summary: string | null
   claim_number: string | null
   paid_amount_inr: number | null
+  rule_result: { status: string; rule_ids: string[]; explanation_en: string } | null
 }
 
 export default function PacketReview() {
@@ -45,7 +47,9 @@ export default function PacketReview() {
         <h1>{SCHEME_NAMES[d.scheme_id] ?? d.scheme_id}</h1>
         <span className={`pill stage-${d.status}`}>{STAGE_LABELS[d.status] ?? d.status}</span>
         <span className="spacer" />
-        <span className="small muted mono">{d.claim_id} · {d.case_id}</span>
+        <span className="small muted mono">
+          {d.claim_id} · <Link to={`/audit/${d.case_id}`}>{d.case_id}</Link>
+        </span>
       </div>
       <p className="small muted">
         Expected payout {rupees(d.expected_payout_inr)}
@@ -80,6 +84,15 @@ export default function PacketReview() {
           {st && <Gate claimId={claimId} st={st} reviewer={reviewer} expected={d.expected_payout_inr}
             onDone={reload} />}
           {state.error && !st && <p className="muted small">Workflow state unavailable: {state.error}</p>}
+
+          {st?.rule_result && (
+            <div className="panel">
+              <h3>Eligibility: {st.rule_result.status.replace(/_/g, ' ')}</h3>
+              <p className="small">{st.rule_result.explanation_en}</p>
+              <RuleChips ids={st.rule_result.rule_ids}
+                passed={st.rule_result.status === 'eligible' ? true : st.rule_result.status === 'not_eligible' ? false : undefined} />
+            </div>
+          )}
 
           <div className="panel">
             <h3>Verifier (v{latest})</h3>

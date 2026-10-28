@@ -1326,6 +1326,31 @@
         }
       }
     },
+    "/rules": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "List Rules",
+        "operationId": "list_rules_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Rules Rules Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -2220,6 +2245,102 @@
           "resolved_by"
         ],
         "title": "ResolveIn"
+      },
+      "RuleOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "effective_from": {
+            "type": "string",
+            "title": "Effective From"
+          },
+          "effective_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective To"
+          },
+          "requires": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requires"
+          },
+          "logic": {
+            "title": "Logic"
+          },
+          "explain_pass": {
+            "type": "string",
+            "title": "Explain Pass"
+          },
+          "explain_fail": {
+            "type": "string",
+            "title": "Explain Fail"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Title"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scheme",
+          "title",
+          "version",
+          "effective_from",
+          "effective_to",
+          "requires",
+          "logic",
+          "explain_pass",
+          "explain_fail",
+          "source_id",
+          "source_title",
+          "source_url"
+        ],
+        "title": "RuleOut"
       },
       "StartIn": {
         "properties": {

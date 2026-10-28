@@ -8,6 +8,7 @@ from suraksha.api.cases import audit_router
 from suraksha.api.cases import router as cases_router
 from suraksha.api.intake import router as intake_router
 from suraksha.api.review import router as review_router
+from suraksha.api.review import rules_router
 from suraksha.api.workflows import router as workflows_router
 
 app = FastAPI(title="Suraksha Setu API", version=__version__)
@@ -16,6 +17,7 @@ app.include_router(audit_router)
 app.include_router(workflows_router)
 app.include_router(intake_router)
 app.include_router(review_router)
+app.include_router(rules_router)
 
 app.add_middleware(
     CORSMiddleware,
